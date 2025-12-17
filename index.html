@@ -312,7 +312,7 @@
                         weatherAdvice: "迪士尼全日戶外活動。海風強勁，必備帽子、圍巾、暖暖包。氣溫 4-10°C。",
                         spots: [
                             { id: 201, type: 'trans', typeLabel: '移動', name: '飯店移動', desc: '星野 1955 -> 玩具總動員飯店 (寄放行李)', transit: '20 min 接駁', tags: ['早起'], 
-                              img: 'icon.png' }, // 沒找到特定圖，暫時用你的icon
+                              img: 'icon.png' },
                             { id: 202, type: 'spot', typeLabel: '樂園', name: '東京迪士尼樂園 (Land)', desc: '夢幻與魔法的王國，建議先抽 美女與野獸 DPA', transit: '單軌電車', tags: ['DPA', '遊行'], mustEat: true, photoTip: '城堡正面的倒影或是與氣球合照', 
                               img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Cinderella_Castle_2014.jpg/640px-Cinderella_Castle_2014.jpg' },
                             { id: 203, type: 'hotel', typeLabel: '住宿', name: '玩具總動員飯店', desc: '入住安迪的房間，中庭廣場晚上超美', tags: ['Check-in'], photoTip: '門口巨型胡迪與巴斯光年', 
@@ -342,7 +342,7 @@
                             { id: 403, type: 'food', typeLabel: '晚餐', name: '富士山市區燒肉', desc: '享受熱騰騰的日式燒肉', parking: '店鋪附設', tags: ['和牛'], mustEat: true, 
                               img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Yakiniku_roaster.jpg/640px-Yakiniku_roaster.jpg' },
                             { id: 404, type: 'hotel', typeLabel: '住宿', name: 'Rental Villa Ooishiso', desc: '大石莊，體驗日式民宿風情', parking: '免費停車', 
-                              img: 'icon.png' } // 民宿建議你之後上傳自己的照片
+                              img: 'icon.png' }
                         ]
                     },
                     // Day 5: 12/25
@@ -423,11 +423,8 @@
                 },
 
                 getImage(spot) {
-                    // 優先使用資料裡的 img 欄位，如果沒有則使用 icon.png
-                    if (spot.img) {
-                        return spot.img;
-                    }
-                    // 這裡的 'icon.png' 是你的富士山圖示
+                    // 如果資料裡有 img 欄位，就用它；沒有就用你的 icon
+                    if (spot.img) return spot.img;
                     return 'icon.png';
                 },
                 
@@ -474,6 +471,7 @@
 </body>
 
 </html>
+
 
 
 
