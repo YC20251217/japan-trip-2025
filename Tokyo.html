@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>東京富士冬日旅 2025</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        fuji: '#2C5F8A',
+                        snow: '#FFFFFF',
+                        warm: '#F4F6F8',
+                        accent: '#E65D5D',
+                        tagFood: '#F4A261',
+                        tagShop: '#E76F51',
+                        tagSpot: '#2A9D8F',
+                        tagHotel: '#457B9D',
+                        tagTrans: '#8D99AE'
+                    },
+                    fontFamily: {
+                        sans: ['"Zen Maru Gothic"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #F4F6F8; color: #333; -webkit-font-smoothing: antialiased; padding-bottom: 80px; }
+        .card-shadow { box-shadow: 0 4px 20px rgba(44, 95, 138, 0.08); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .bottom-nav { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: rgba(255, 255, 255, 0.9); }
+        .drag-handle { cursor: grab; }
+        .sortable-ghost { opacity: 0.4; background: #eef2f6; }
+    </style>
+</head>
+<body x-data="travelApp()">
+
+    <header class="fixed top-0 w-full z-40 bg-white/90 backdrop-blur-md shadow-sm transition-all duration-300">
+        <div class="px-5 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold text-fuji tracking-wide">東京迪士尼・富士山</h1>
+                <p class="text-xs text-gray-500 mt-0.5">2025.12.21 - 12.28 (8 Days)</p>
+            </div>
+            <div class="bg-fuji text-white w-10 h-10 rounded-full flex items-center justify-center shadow-md">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+        
+        <div x-show="currentTab === 'itinerary'" class="flex overflow-x-auto hide-scrollbar pb-3 px-4 gap-3 transition-all">
+            <template x-for="(day, index) in days" :key="index">
+                <div @click="changeDay(index)" 
+                     :class="{'bg-fuji text-white shadow-lg scale-105': selectedDayIdx === index, 'bg-white text-gray-400 border border-gray-100': selectedDayIdx !== index}"
+                     class="flex-shrink-0 w-16 h-20 rounded-2xl flex flex-col items-center justify-center transition-all duration-200 cursor-pointer">
+                    <span class="text-[10px] font-bold tracking-wider" x-text="day.dateStr"></span>
+                    <span class="text-xl font-bold mt-1" x-text="day.dayNum"></span>
+                    <span class="text-[10px] mt-1" x-text="day.weekday"></span>
+                </div>
+            </template>
+        </div>
+    </header>
+
+    <main class="pt-[140px] px-4 min-h-screen">
+
+        <div x-show="currentTab === 'itinerary'" x-transition.opacity>
+            
+            <div class="mb-6 bg-gradient-to-r from-blue-50 to-white p-4 rounded-2xl border border-blue-100 flex items-start gap-4">
+                <div class="text-3xl text-fuji"><i class="fas fa-snowflake"></i></div>
+                <div>
+                    <h3 class="font-bold text-fuji text-sm mb-1">本日穿著 & 雪況</h3>
+                    <p class="text-xs text-gray-600 leading-relaxed" x-text="currentDayData.weatherAdvice"></p>
+                </div>
+            </div>
+
+            <div id="itinerary-list" class="space-y-4">
+                <template x-for="(spot, index) in currentDayData.spots" :key="spot.id">
+                    <div :data-id="spot.id" class="bg-white rounded-2xl p-4 card-shadow relative group">
+                        
+                        <div class="flex justify-between items-start mb-2">
+                            <span :class="getClass(spot.type)" class="text-[10px] px-2 py-1 rounded-full text-white font-bold tracking-wide" x-text="spot.typeLabel"></span>
+                            <div class="drag-handle text-gray-300 p-2"><i class="fas fa-grip-lines"></i></div>
+                        </div>
+
+                        <div class="flex gap-4">
+                            <div class="w-20 h-20 bg-gray-100 rounded-xl flex-shrink-0 overflow-hidden relative">
+                                <img :src="getImage(spot.name)" class="w-full h-full object-cover" alt="spot">
+                                <div class="absolute bottom-0 right-0 bg-black/50 text-white text-[8px] p-1 rounded-tl-lg">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="flex-1">
+                                <h3 class="font-bold text-gray-800 text-lg leading-tight" x-text="spot.name"></h3>
+                                <p class="text-xs text-gray-500 mt-1 line-clamp-2" x-text="spot.desc"></p>
+                                
+                                <div x-show="spot.transit" class="mt-2 flex items-center gap-1 text-[10px] text-tagTrans font-bold bg-gray-50 inline-block px-2 py-0.5 rounded">
+                                    <i class="fas fa-car-side"></i>
+                                    <span x-text="spot.transit"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2 mt-3 flex-wrap">
+                            <template x-for="tag in spot.tags">
+                                <span class="text-[10px] border border-gray-200 text-gray-500 px-2 py-0.5 rounded-md" x-text="tag"></span>
+                            </template>
+                            <span x-show="spot.mustEat" class="text-[10px] bg-tagFood/10 text-tagFood px-2 py-0.5 rounded-md font-bold">必吃</span>
+                            <span x-show="spot.mustBuy" class="text-[10px] bg-tagShop/10 text-tagShop px-2 py-0.5 rounded-md font-bold">必買</span>
+                        </div>
+
+                        <div x-show="spot.parking || spot.gas" class="mt-3 pt-3 border-t border-dashed border-gray-200 flex gap-4 text-[11px] text-gray-600">
+                            <div x-show="spot.parking"><i class="fas fa-parking text-fuji mr-1"></i> <span x-text="spot.parking"></span></div>
+                            <div x-show="spot.gas"><i class="fas fa-gas-pump text-accent mr-1"></i> <span x-text="spot.gas"></span></div>
+                        </div>
+
+                        <div x-show="spot.photoTip" class="mt-2 bg-yellow-50 p-2 rounded-lg text-[11px] text-yellow-800 flex gap-2 items-start">
+                            <i class="fas fa-lightbulb mt-0.5"></i>
+                            <span x-text="spot.photoTip"></span>
+                        </div>
+
+                        <div class="mt-4 flex gap-2">
+                            <a :href="'https://www.google.com/maps/search/?api=1&query=' + spot.name" target="_blank" class="flex-1 bg-fuji text-white py-2 rounded-xl text-xs font-bold text-center shadow-md shadow-blue-200">
+                                <i class="fas fa-location-arrow mr-1"></i> 導航
+                            </a>
+                            <button class="w-10 h-9 bg-gray-100 rounded-xl text-gray-500 flex items-center justify-center">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+            
+            <div class="h-24"></div> </div>
+
+        <div x-show="currentTab === 'guide'" x-transition.opacity>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">旅行工具箱</h2>
+
+            <div class="bg-red-50 border border-red-100 rounded-2xl p-4 mb-4">
+                <h3 class="text-red-800 font-bold mb-2"><i class="fas fa-exclamation-circle mr-2"></i>緊急聯絡</h3>
+                <div class="flex justify-between text-sm text-red-700 mb-2">
+                    <span>警察</span> <span class="font-bold">110</span>
+                </div>
+                <div class="flex justify-between text-sm text-red-700 mb-2">
+                    <span>消防/救護</span> <span class="font-bold">119</span>
+                </div>
+                <div class="text-xs text-red-600 mt-2 pt-2 border-t border-red-100">
+                    駐日代表處: +81-3-3280-7811
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-white p-4 rounded-2xl card-shadow text-center">
+                    <i class="fas fa-plane text-2xl text-fuji mb-2"></i>
+                    <p class="text-xs font-bold text-gray-600">航班資訊</p>
+                    <p class="text-[10px] text-gray-400 mt-1">CI-100 / CI-101</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl card-shadow text-center">
+                    <i class="fas fa-hotel text-2xl text-fuji mb-2"></i>
+                    <p class="text-xs font-bold text-gray-600">訂房憑證</p>
+                    <p class="text-[10px] text-gray-400 mt-1">3 間飯店</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl card-shadow text-center col-span-2 flex items-center justify-between px-6">
+                    <div class="text-left">
+                        <i class="fas fa-car text-xl text-fuji mb-1"></i>
+                        <p class="text-xs font-bold text-gray-600">租車憑證 (浦安-吾妻橋)</p>
+                    </div>
+                    <button class="text-xs bg-gray-100 px-3 py-1 rounded-lg">查看</button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-4 card-shadow mb-4">
+                <h3 class="font-bold text-gray-800 mb-3">行李清單</h3>
+                <div class="space-y-2">
+                    <template x-for="(item, idx) in packingList" :key="idx">
+                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition">
+                            <input type="checkbox" x-model="item.checked" class="w-5 h-5 rounded text-fuji focus:ring-fuji border-gray-300">
+                            <span :class="{'line-through text-gray-300': item.checked, 'text-gray-700': !item.checked}" class="text-sm" x-text="item.name"></span>
+                        </label>
+                    </template>
+                </div>
+                <div class="mt-3 flex gap-2">
+                    <input type="text" x-model="newItem" @keydown.enter="addItem()" placeholder="新增物品..." class="flex-1 bg-gray-50 border-none rounded-lg text-sm px-3 py-2">
+                    <button @click="addItem()" class="bg-fuji text-white px-3 rounded-lg"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+            
+            <div class="h-24"></div>
+        </div>
+
+        <div x-show="currentTab === 'weather'" x-transition.opacity>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">天氣概覽</h2>
+            
+            <div class="space-y-3">
+                <template x-for="(day, idx) in days" :key="idx">
+                    <div class="bg-white p-4 rounded-2xl card-shadow flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="text-center w-10">
+                                <div class="text-[10px] text-gray-400" x-text="day.dateStr"></div>
+                                <div class="font-bold text-gray-800" x-text="day.weekday"></div>
+                            </div>
+                            <div class="h-8 w-[1px] bg-gray-100"></div>
+                            <div>
+                                <div class="text-sm font-bold text-gray-700 flex items-center gap-2">
+                                    <i :class="getWeatherIcon(idx)" class="text-fuji"></i>
+                                    <span x-text="getWeatherDesc(idx)"></span>
+                                </div>
+                                <div class="text-[10px] text-gray-500 mt-0.5">降雪機率: <span x-text="getSnowProb(idx)"></span>%</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold text-gray-800"><span x-text="getTemp(idx).max"></span>° <span class="text-gray-300">/</span> <span class="text-sm text-gray-500" x-text="getTemp(idx).min"></span>°</div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+            
+            <div class="mt-6 bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                <h3 class="text-sm font-bold text-fuji mb-2">富士山區特別提醒</h3>
+                <p class="text-xs text-gray-600 mb-2">12月下旬富士五湖地區早晚極冷，平均氣溫在 -2°C 至 8°C。</p>
+                <ul class="text-xs text-gray-600 list-disc list-inside space-y-1">
+                    <li>建議洋蔥式穿法，室內有暖氣。</li>
+                    <li>請準備防水防滑的雪靴。</li>
+                    <li>自駕務必確認車輛配有雪胎 (Snow Tires)。</li>
+                </ul>
+            </div>
+
+            <div class="h-24"></div>
+        </div>
+
+    </main>
+
+    <nav class="fixed bottom-6 left-4 right-4 h-16 bg-white/95 backdrop-blur-xl rounded-full shadow-2xl flex justify-around items-center z-50 border border-white/50">
+        <button @click="currentTab = 'itinerary'" :class="{'text-fuji scale-110': currentTab === 'itinerary', 'text-gray-400': currentTab !== 'itinerary'}" class="flex flex-col items-center transition-all duration-300 w-16">
+            <i class="fas fa-map-marked-alt text-xl mb-1"></i>
+            <span class="text-[9px] font-bold">行程</span>
+        </button>
+        
+        <div class="w-[1px] h-6 bg-gray-200"></div>
+
+        <button @click="currentTab = 'guide'" :class="{'text-fuji scale-110': currentTab === 'guide', 'text-gray-400': currentTab !== 'guide'}" class="flex flex-col items-center transition-all duration-300 w-16">
+            <i class="fas fa-suitcase-rolling text-xl mb-1"></i>
+            <span class="text-[9px] font-bold">指南</span>
+        </button>
+
+        <div class="w-[1px] h-6 bg-gray-200"></div>
+
+        <button @click="currentTab = 'weather'" :class="{'text-fuji scale-110': currentTab === 'weather', 'text-gray-400': currentTab !== 'weather'}" class="flex flex-col items-center transition-all duration-300 w-16">
+            <i class="fas fa-cloud-sun text-xl mb-1"></i>
+            <span class="text-[9px] font-bold">天氣</span>
+        </button>
+    </nav>
+
+    <script>
+        function travelApp() {
+            return {
+                currentTab: 'itinerary',
+                selectedDayIdx: 0,
+                newItem: '',
+                packingList: [
+                    { name: '護照', checked: false },
+                    { name: '日幣現金', checked: false },
+                    { name: '網卡/漫遊', checked: false },
+                    { name: '雪靴', checked: true },
+                    { name: '駕照日文譯本', checked: false },
+                ],
+                days: [
+                    { dateStr: '12/21', dayNum: 'D1', weekday: '週日' },
+                    { dateStr: '12/22', dayNum: 'D2', weekday: '週一' },
+                    { dateStr: '12/23', dayNum: 'D3', weekday: '週二' },
+                    { dateStr: '12/24', dayNum: 'D4', weekday: '週三' },
+                    { dateStr: '12/25', dayNum: 'D5', weekday: '週四' },
+                    { dateStr: '12/26', dayNum: 'D6', weekday: '週五' },
+                    { dateStr: '12/27', dayNum: 'D7', weekday: '週六' },
+                    { dateStr: '12/28', dayNum: 'D8', weekday: '週日' },
+                ],
+                // 完整的行程數據
+                itineraryData: [
+                    // Day 1: 12/21
+                    {
+                        weatherAdvice: "抵達日。東京灣區風大，建議準備防風外套。氣溫約 5-11°C。",
+                        spots: [
+                            { id: 101, type: 'trans', typeLabel: '交通', name: '成田機場 (NRT)', desc: '抵達、入境手續、領取行李', transit: '60 min 巴士', tags: ['入境'] },
+                            { id: 102, type: 'shop', typeLabel: '購物', name: '三井 Outlet Park 幕張', desc: '離機場最近的大型 Outlet，先買禦寒衣物', transit: '30 min 電車', tags: ['Nike', 'BEAMS'], mustBuy: true },
+                            { id: 103, type: 'spot', typeLabel: '景點', name: '新浦安', desc: '前往飯店區域，欣賞東京灣夜景', transit: '15 min 接駁', tags: ['散步'] },
+                            { id: 104, type: 'hotel', typeLabel: '住宿', name: '星野 1955 Tokyo Bay', desc: '懷舊美式風格，記得預約明日迪士尼接駁', tags: ['Check-in', '親子友善'], mustEat: true, photoTip: '大廳的1955年古董車必拍' }
+                        ]
+                    },
+                    // Day 2: 12/22
+                    {
+                        weatherAdvice: "迪士尼全日戶外活動。海風強勁，必備帽子、圍巾、暖暖包。氣溫 4-10°C。",
+                        spots: [
+                            { id: 201, type: 'trans', typeLabel: '移動', name: '飯店移動', desc: '星野 1955 -> 玩具總動員飯店 (寄放行李)', transit: '20 min 接駁', tags: ['早起'] },
+                            { id: 202, type: 'spot', typeLabel: '樂園', name: '東京迪士尼樂園 (Land)', desc: '夢幻與魔法的王國，建議先抽 美女與野獸 DPA', transit: '單軌電車', tags: ['DPA', '遊行'], mustEat: true, photoTip: '城堡正面的倒影或是與氣球合照' },
+                            { id: 203, type: 'hotel', typeLabel: '住宿', name: '玩具總動員飯店', desc: '入住安迪的房間，中庭廣場晚上超美', tags: ['Check-in'], photoTip: '門口巨型胡迪與巴斯光年' }
+                        ]
+                    },
+                    // Day 3: 12/23
+                    {
+                        weatherAdvice: "迪士尼海洋，體感溫度比陸地更低。建議穿著發熱衣。氣溫 3-9°C。",
+                        spots: [
+                            { id: 301, type: 'trans', typeLabel: '移動', name: '前往迪士尼海洋', desc: '利用單軌電車移動', transit: '10 min', tags: [] },
+                            { id: 302, type: 'spot', typeLabel: '樂園', name: '東京迪士尼海洋 (Sea)', desc: 'Fantasy Springs 新園區必去！', tags: ['達菲', '夜間秀'], mustBuy: true, photoTip: '地中海港灣夕陽與火山爆發' },
+                            { id: 303, type: 'hotel', typeLabel: '住宿', name: '星野 1955 Tokyo Bay', desc: '回到第一晚飯店休息', tags: ['Shuttle Bus'], transit: '25 min 接駁' }
+                        ]
+                    },
+                    // Day 4: 12/24 (開始自駕)
+                    {
+                        weatherAdvice: "前往富士山山區，氣溫驟降。可能積雪，請注意行車安全。氣溫 -2-6°C。",
+                        spots: [
+                            { id: 401, type: 'trans', typeLabel: '租車', name: '浦安やなぎ通り店 (租車)', desc: '取車手續，檢查雪胎，設定導航', transit: '2 hr 開車', tags: ['ETC卡', '駕照譯本'] },
+                            { id: 402, type: 'spot', typeLabel: '活動', name: '富士天滑雪度假村', desc: 'Fujiten Snow Resort，初學者友善', parking: '收費停車場', gas: '出發前加滿', tags: ['滑雪', '雪盆'], photoTip: '滑雪場背景就是富士山' },
+                            { id: 403, type: 'food', typeLabel: '晚餐', name: '富士山市區燒肉', desc: '享受熱騰騰的日式燒肉', parking: '店鋪附設', tags: ['和牛'], mustEat: true },
+                            { id: 404, type: 'hotel', typeLabel: '住宿', name: 'Rental Villa Ooishiso', desc: '大石莊，體驗日式民宿風情', parking: '免費停車' }
+                        ]
+                    },
+                    // Day 5: 12/25
+                    {
+                        weatherAdvice: "聖誕節！富士五湖區寒冷。大石公園風大。氣溫 -3-5°C。",
+                        spots: [
+                            { id: 501, type: 'spot', typeLabel: '景點', name: '大石公園', desc: '清晨散步，看逆富士的最佳地點', parking: '免費', tags: ['散步'], photoTip: '河口湖+薰衣草(枯)+富士山' },
+                            { id: 502, type: 'spot', typeLabel: '活動', name: '山中湖水上巴士', desc: '搭乘 KABA 水陸兩用車或天鵝船', parking: '公共停車場', transit: '30 min 開車', tags: ['天鵝船'] },
+                            { id: 503, type: 'spot', typeLabel: '景點', name: '富士山全景纜車', desc: '天上山公園，敲響天上之鐘', parking: '縣營停車場(付費)', tags: ['狸貓茶屋'], photoTip: '心型鐘與富士山同框' },
+                            { id: 504, type: 'hotel', typeLabel: '住宿', name: 'Rental Villa Ooishiso', desc: '返回民宿休息' }
+                        ]
+                    },
+                    // Day 6: 12/26
+                    {
+                        weatherAdvice: "返回東京市區。溫差大，穿脫方便的衣物為主。氣溫 2-9°C。",
+                        spots: [
+                            { id: 601, type: 'spot', typeLabel: '活動', name: '富士野生動物園', desc: 'Fuji Safari Park，搭乘叢林巴士餵食獅子', parking: '免費', tags: ['親子', '動物'], photoTip: '獅子大開口的瞬間' },
+                            { id: 602, type: 'trans', typeLabel: '還車', name: '還車：吾妻橋店', desc: '地址：墨田区吾妻橋3-8-2。請保留加油收據', gas: '還車前加滿', transit: '2 hr 開車 (易塞車)', tags: ['加油'] },
+                            { id: 603, type: 'spot', typeLabel: '散步', name: '淺草周邊散策', desc: '隅田川步道，看晴空塔', tags: ['晴空塔'], photoTip: '隅田公園拍金色便便與晴空塔' },
+                            { id: 604, type: 'hotel', typeLabel: '住宿', name: 'Asakusa New City Hotel', desc: '新城琢居飯店 check-in', tags: ['淺草'] }
+                        ]
+                    },
+                    // Day 7: 12/27
+                    {
+                        weatherAdvice: "東京市區逛街，室內暖氣強。建議穿薄長袖+厚外套。氣溫 6-12°C。",
+                        spots: [
+                            { id: 701, type: 'shop', typeLabel: '購物', name: 'BEAMS JAPAN 新宿', desc: '日本製造的潮流選物，必逛B1-5F', transit: '30 min 電車', tags: ['潮牌', '伴手禮'], mustBuy: true },
+                            { id: 702, type: 'spot', typeLabel: '景點', name: '池袋太陽城水族館', desc: '天空中的企鵝，都市綠洲', transit: '15 min 電車', tags: ['親子', '企鵝'], photoTip: '頭頂上的企鵝游泳' },
+                            { id: 703, type: 'spot', typeLabel: '活動', name: '東京車站', desc: '欣賞丸之內站舍與迪士尼限定燈展', transit: '20 min 電車', tags: ['夜景', '燈光秀'], photoTip: '站前廣場拍攝全景' },
+                            { id: 704, type: 'hotel', typeLabel: '住宿', name: 'Asakusa New City Hotel', desc: '回淺草休息' }
+                        ]
+                    },
+                    // Day 8: 12/28
+                    {
+                        weatherAdvice: "回程日。淺草寺周邊人多，注意行李。氣溫 6-12°C。",
+                        spots: [
+                            { id: 801, type: 'spot', typeLabel: '體驗', name: '淺草花屋敷 / 和服體驗', desc: '日本最古老遊樂園，穿和服拍照', tags: ['懷舊', '和服'], photoTip: '雷門大燈籠下' },
+                            { id: 802, type: 'trans', typeLabel: '交通', name: '前往成田機場', desc: '搭乘 Access 特快直達機場', transit: '60 min 電車', tags: ['最後採買'] },
+                            { id: 803, type: 'trans', typeLabel: '航班', name: '起飛回台灣', desc: '平安歸賦', tags: ['Sweet Home'] }
+                        ]
+                    }
+                ],
+                
+                get currentDayData() {
+                    return this.itineraryData[this.selectedDayIdx];
+                },
+
+                changeDay(index) {
+                    this.selectedDayIdx = index;
+                    // Reset Sortable when changing days (conceptually)
+                },
+
+                getClass(type) {
+                    const map = {
+                        'food': 'bg-tagFood',
+                        'shop': 'bg-tagShop',
+                        'spot': 'bg-tagSpot',
+                        'hotel': 'bg-tagHotel',
+                        'trans': 'bg-tagTrans',
+                        'rent': 'bg-tagTrans'
+                    };
+                    return map[type] || 'bg-fuji';
+                },
+
+                getImage(name) {
+                    // Placeholder logic using Unsplash source for demo
+                    const key = name.split(' ')[0]; 
+                    return `https://source.unsplash.com/200x200/?${key},japan`;
+                },
+                
+                // Weather helpers
+                getWeatherIcon(idx) {
+                    const icons = ['fa-wind', 'fa-sun', 'fa-cloud-sun', 'fa-snowflake', 'fa-snowflake', 'fa-cloud', 'fa-sun', 'fa-plane'];
+                    return `fas ${icons[idx]}`;
+                },
+                getWeatherDesc(idx) {
+                    const descs = ['多雲強風', '晴朗', '多雲時晴', '有雪', '降雪', '多雲', '晴朗', '多雲'];
+                    return descs[idx];
+                },
+                getSnowProb(idx) {
+                    return [10, 0, 10, 60, 80, 20, 0, 0][idx];
+                },
+                getTemp(idx) {
+                    const temps = [
+                        {max:11, min:5}, {max:10, min:4}, {max:9, min:3}, {max:6, min:-2}, 
+                        {max:5, min:-3}, {max:9, min:2}, {max:12, min:6}, {max:12, min:6}
+                    ];
+                    return temps[idx];
+                },
+
+                addItem() {
+                    if (this.newItem.trim() !== '') {
+                        this.packingList.push({ name: this.newItem, checked: false });
+                        this.newItem = '';
+                    }
+                },
+
+                init() {
+                    // Initialize SortableJS
+                    this.$nextTick(() => {
+                        new Sortable(document.getElementById('itinerary-list'), {
+                            handle: '.drag-handle',
+                            animation: 150,
+                            ghostClass: 'sortable-ghost'
+                        });
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>
