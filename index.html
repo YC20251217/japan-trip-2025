@@ -38,7 +38,12 @@
                         tagCloth: '#8E9AAF',
                         darkBg: '#1a1b1e',
                         darkCard: '#25262b',
-                        darkText: '#c1c2c5'
+                        darkText: '#c1c2c5',
+                        // 計算機按鍵色
+                        calcBtn: '#f1f3f5',
+                        calcBtnDark: '#2c2e33',
+                        calcOp: '#ffe3e3',
+                        calcOpDark: '#4a2828'
                     },
                     fontFamily: {
                         sans: ['"Zen Maru Gothic"', 'sans-serif'],
@@ -61,6 +66,24 @@
             background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
         [x-cloak] { display: none !important; }
+        
+        /* 圓餅圖樣式 */
+        .pie-chart {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            position: relative;
+        }
+        .pie-chart::after {
+            content: "";
+            position: absolute;
+            inset: 30px; /* 甜甜圈內圈大小 */
+            background: #fff;
+            border-radius: 50%;
+        }
+        .dark .pie-chart::after {
+            background: #25262b; /* 夜間模式內圈顏色 */
+        }
     </style>
 </head>
 <body x-data="travelApp()" :class="{'dark': isDarkMode}" class="bg-warm text-gray-800 dark:bg-darkBg dark:text-darkText transition-colors duration-300">
@@ -122,7 +145,7 @@
             </template>
         </div>
         <div x-show="currentTab !== 'itinerary'" class="py-4 px-5 text-center font-bold text-fuji dark:text-blue-300">
-            <span x-text="currentTab === 'guide' ? '旅行工具箱' : '天氣概覽'"></span>
+            <span x-text="getTabTitle()"></span>
         </div>
     </div>
 
@@ -149,10 +172,6 @@
                                 <span :class="getSpotClass(spot.type)" class="text-[10px] px-2 py-0.5 rounded text-white font-bold" x-text="spot.typeLabel"></span>
                             </div>
                             <div class="flex items-center gap-1">
-                                <div x-show="spot.cost > 0" class="text-xs font-bold text-accent mr-2">
-                                    <span x-show="spot.includeInBudget" class="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-500 px-1 rounded mr-1"><i class="fas fa-calculator"></i></span>
-                                    <span x-text="formatMoney(spot.cost)"></span>
-                                </div>
                                 <button @click="editSpot(spot)" class="text-gray-300 hover:text-fuji px-2">
                                     <i class="fas fa-pen text-xs"></i>
                                 </button>
@@ -175,7 +194,6 @@
                                 <textarea x-model="spot.desc" rows="2" class="w-full text-xs text-gray-500 dark:text-gray-400 mt-2 bg-transparent border-none outline-none resize-none p-0" placeholder="備註..."></textarea>
                             </div>
                         </div>
-
                         <button @click="removeSpot(index)" class="absolute -right-2 -top-2 w-6 h-6 bg-red-100 text-red-500 rounded-full text-xs opacity-0 group-hover:opacity-100 transition shadow-sm flex items-center justify-center">
                             <i class="fas fa-times"></i>
                         </button>
@@ -189,86 +207,117 @@
             <div class="h-24"></div> 
         </div>
 
-        <div x-show="currentTab === 'guide'" x-transition.opacity>
+        <div x-show="currentTab === 'wallet'" x-transition.opacity>
             
-            <div class="bg-white dark:bg-darkCard rounded-2xl p-4 card-shadow mb-6 border-t-4 border-fuji transition-colors">
-                <div class="flex justify-between items-start mb-4 border-b border-gray-100 dark:border-gray-700 pb-4">
-                    <div class="w-1/2 pr-2">
-                        <label class="text-[10px] text-gray-400 block mb-1">總預算 (JPY)</label>
-                        <input type="number" x-model.number="budget.total" class="w-full text-lg font-bold text-gray-800 dark:text-gray-100 border-b border-gray-200 dark:border-gray-600 focus:border-fuji outline-none bg-transparent">
+            <div class="bg-gradient-to-br from-fuji to-blue-600 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-5 text-white shadow-lg mb-6 relative overflow-hidden">
+                <div class="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <div class="text-xs text-blue-100 opacity-80 mb-1">目前攜帶現金 (Initial Cash)</div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">¥</span>
+                            <input type="number" x-model.number="walletData.initialCash" class="bg-transparent text-2xl font-bold w-32 outline-none border-b border-white/30 focus:border-white" placeholder="0">
+                        </div>
                     </div>
-                    <div class="w-1/2 pl-2 text-right">
-                        <label class="text-[10px] text-gray-400 block mb-1">匯率 (JPY->TWD)</label>
-                        <input type="number" step="0.001" x-model.number="budget.rate" class="w-16 text-right font-bold text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-600 focus:border-fuji outline-none bg-transparent">
+                    <div class="text-right">
+                        <div class="text-xs text-blue-100 opacity-80 mb-1">匯率 Rate</div>
+                        <input type="number" step="0.001" x-model.number="walletData.rate" class="w-12 bg-transparent text-right font-bold outline-none border-b border-white/30 focus:border-white">
                     </div>
                 </div>
 
-                <div class="bg-warm dark:bg-gray-800 rounded-xl p-4 mb-4 text-center">
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">剩餘金額</div>
-                    <div class="text-3xl font-bold" :class="(budget.total - totalSpent) >= 0 ? 'text-fuji dark:text-blue-400' : 'text-red-500'">
-                        <span x-text="formatMoney(budget.total - totalSpent)"></span>
+                <div class="pt-4 border-t border-white/20 flex justify-between items-end">
+                    <div>
+                        <div class="text-xs text-blue-200">剩餘 Balance</div>
+                        <div class="text-3xl font-bold" x-text="formatMoney(remainingCash)"></div>
                     </div>
-                    <div class="text-xs text-gray-400 mt-1">
-                        (包含行程同步支出)
+                    <div class="text-right">
+                        <div class="text-xs text-blue-200">已支出 Spent</div>
+                        <div class="text-lg font-bold opacity-90" x-text="formatMoney(totalSpent)"></div>
                     </div>
                 </div>
+            </div>
 
-                <div class="space-y-3 mb-4">
-                    <div class="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 p-2 rounded-lg border border-blue-100 dark:border-blue-800">
-                        <div class="w-20">
-                            <span class="text-[10px] font-bold text-fuji dark:text-blue-300">行程同步</span>
-                            <div class="h-1 w-full rounded-full mt-1 bg-gray-200 dark:bg-gray-600 overflow-hidden">
-                                <div class="bg-fuji h-full" style="width: 100%"></div>
-                            </div>
-                        </div>
-                        <div class="flex-1 px-1">
-                            <div class="text-[9px] text-gray-400">總計花費</div>
-                            <div class="text-xs font-bold text-gray-800 dark:text-gray-200" x-text="formatMoney(itinerarySpent)"></div>
-                        </div>
-                        <div class="text-[10px] text-gray-400 italic">自動計算</div>
-                    </div>
+            <div class="bg-white dark:bg-darkCard rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden mb-6">
+                <div class="bg-gray-50 dark:bg-gray-800 p-4 text-right border-b border-gray-100 dark:border-gray-700">
+                    <div class="text-xs text-gray-400 h-4" x-text="calc.equation"></div>
+                    <div class="text-3xl font-bold text-gray-800 dark:text-white truncate" x-text="calc.display || '0'"></div>
+                </div>
 
-                    <template x-for="(item, index) in budget.items" :key="index">
-                        <div class="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-2 rounded-lg">
-                            <div class="w-20">
-                                <select x-model="item.category" class="w-full bg-transparent text-[10px] font-bold text-gray-600 dark:text-gray-300 outline-none border-none p-0">
-                                    <template x-for="cat in budgetCategories" :key="cat">
-                                        <option :value="cat" x-text="cat"></option>
-                                    </template>
-                                </select>
-                                <div class="h-1 w-full rounded-full mt-1 overflow-hidden bg-gray-200 dark:bg-gray-600">
-                                    <div :class="getBudgetColor(item.category)" class="h-full" :style="'width: ' + (item.amount > 0 ? (item.spent / item.amount * 100) : 0) + '%'"></div>
-                                </div>
+                <div class="p-3 grid grid-cols-3 gap-2 bg-white dark:bg-darkCard">
+                    <input type="text" x-model="calc.desc" placeholder="品項名稱 (例: 晚餐)" class="col-span-2 bg-gray-50 dark:bg-gray-700 dark:text-white px-3 py-2 rounded-xl text-sm outline-none focus:ring-1 focus:ring-fuji">
+                    <select x-model="calc.category" class="bg-gray-50 dark:bg-gray-700 dark:text-white px-2 py-2 rounded-xl text-xs outline-none">
+                        <template x-for="cat in budgetCategories" :key="cat">
+                            <option :value="cat" x-text="cat"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-4 gap-1 p-2 bg-gray-50 dark:bg-gray-900/50">
+                    <template x-for="btn in calcButtons">
+                        <button @click="handleCalc(btn)" 
+                            :class="[
+                                'h-14 rounded-xl font-bold text-lg transition active:scale-95 shadow-sm',
+                                isOperator(btn) ? 'bg-calcOp dark:bg-calcOpDark text-accent' : 
+                                btn === 'Save' ? 'bg-fuji text-white col-span-2' : 
+                                'bg-white dark:bg-calcBtnDark text-gray-700 dark:text-gray-200'
+                            ]"
+                        >
+                            <span x-show="btn !== 'Save'" x-text="btn"></span>
+                            <span x-show="btn === 'Save'" class="text-sm flex items-center justify-center gap-1"><i class="fas fa-save"></i> 加入記帳</span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-darkCard rounded-2xl p-5 shadow-sm mb-6 flex items-center justify-between">
+                <div class="pie-chart shadow-inner" :style="pieChartStyle"></div>
+                <div class="flex-1 pl-6 space-y-1">
+                    <h4 class="text-xs font-bold text-gray-400 mb-2">支出分類統計</h4>
+                    <template x-for="cat in sortedCategories" :key="cat.name">
+                        <div class="flex items-center justify-between text-xs" x-show="cat.value > 0">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full" :class="getBudgetColor(cat.name)"></div>
+                                <span class="text-gray-600 dark:text-gray-300" x-text="cat.name"></span>
                             </div>
-                            <div class="flex-1 px-1">
-                                <div class="text-[9px] text-gray-400">預算</div>
-                                <input type="number" x-model.number="item.amount" class="w-full bg-transparent text-xs text-gray-800 dark:text-gray-200 font-bold outline-none">
-                            </div>
-                            <div class="flex-1 px-1 border-l border-gray-200 dark:border-gray-700">
-                                <div class="text-[9px] text-gray-400">實花</div>
-                                <input type="number" x-model.number="item.spent" class="w-full bg-transparent text-xs text-accent font-bold outline-none">
-                            </div>
-                            <button @click="removeBudgetItem(index)" class="w-6 text-gray-300 hover:text-red-400"><i class="fas fa-trash-alt text-xs"></i></button>
+                            <span class="font-bold text-gray-800 dark:text-gray-100" x-text="Math.round(cat.percent) + '%'"></span>
                         </div>
                     </template>
                 </div>
-                <button @click="addBudgetItem()" class="w-full py-2 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl text-gray-400 text-xs font-bold hover:border-fuji hover:text-fuji dark:hover:text-white transition">
-                    <i class="fas fa-plus mr-1"></i> 新增預算項目
-                </button>
             </div>
 
-            <div class="space-y-4 mb-6">
+            <div class="space-y-3">
+                <h3 class="font-bold text-gray-800 dark:text-white px-2">支出紀錄</h3>
+                <template x-for="(tx, index) in walletData.transactions" :key="index">
+                    <div class="bg-white dark:bg-darkCard p-3 rounded-xl shadow-sm flex items-center justify-between border-l-4" :class="getBudgetBorderColor(tx.category)">
+                        <div>
+                            <div class="font-bold text-gray-800 dark:text-gray-200 text-sm" x-text="tx.desc || '未命名'"></div>
+                            <div class="text-[10px] text-gray-400" x-text="tx.category + ' | ' + tx.date"></div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-fuji dark:text-blue-300" x-text="formatMoney(tx.amount)"></div>
+                            <button @click="removeTransaction(index)" class="text-gray-300 hover:text-red-400 text-xs mt-1"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="walletData.transactions.length === 0" class="text-center text-gray-400 text-xs py-4">
+                    尚未有記帳紀錄
+                </div>
+            </div>
+
+            <div class="h-24"></div>
+        </div>
+
+        <div x-show="currentTab === 'guide'" x-transition.opacity>
+            <div class="space-y-4 mb-6 mt-2">
                 <template x-for="(block, bIdx) in memoBlocks" :key="bIdx">
                     <div class="bg-yellow-50 dark:bg-yellow-900/10 rounded-2xl shadow-sm border border-yellow-100 dark:border-yellow-900/30 overflow-hidden">
-                        
                         <div class="p-4 flex items-center justify-between cursor-pointer hover:bg-yellow-100/50 dark:hover:bg-yellow-900/20 transition" @click="block.isOpen = !block.isOpen">
                             <div class="flex items-center gap-2 flex-1">
                                 <i class="fas fa-chevron-right text-yellow-600 text-xs transition-transform duration-200" :class="{'rotate-90': block.isOpen}"></i>
                                 <input type="text" x-model="block.title" @click.stop class="bg-transparent font-bold text-yellow-800 dark:text-yellow-500 outline-none w-full" placeholder="清單標題...">
                             </div>
-                            <div class="text-xs text-yellow-600 mr-2" x-show="!block.isOpen">
-                                <span x-text="block.items.length"></span> 項
-                            </div>
+                            <div class="text-xs text-yellow-600 mr-2" x-show="!block.isOpen"><span x-text="block.items.length"></span> 項</div>
                             <button @click.stop="removeMemoBlock(bIdx)" class="text-gray-300 hover:text-red-400"><i class="fas fa-trash-alt text-xs"></i></button>
                         </div>
 
@@ -362,8 +411,13 @@
             <span class="text-[9px] font-bold">行程</span>
         </button>
         <div class="w-[1px] h-6 bg-gray-200 dark:bg-gray-700"></div>
+        <button @click="currentTab = 'wallet'" :class="{'text-fuji dark:text-blue-300 scale-110': currentTab === 'wallet', 'text-gray-400 dark:text-gray-500': currentTab !== 'wallet'}" class="flex flex-col items-center transition-all duration-300 w-16">
+            <i class="fas fa-wallet text-xl mb-1"></i>
+            <span class="text-[9px] font-bold">錢包</span>
+        </button>
+        <div class="w-[1px] h-6 bg-gray-200 dark:bg-gray-700"></div>
         <button @click="currentTab = 'guide'" :class="{'text-fuji dark:text-blue-300 scale-110': currentTab === 'guide', 'text-gray-400 dark:text-gray-500': currentTab !== 'guide'}" class="flex flex-col items-center transition-all duration-300 w-16">
-            <i class="fas fa-suitcase-rolling text-xl mb-1"></i>
+            <i class="fas fa-book-open text-xl mb-1"></i>
             <span class="text-[9px] font-bold">指南</span>
         </button>
         <div class="w-[1px] h-6 bg-gray-200 dark:bg-gray-700"></div>
@@ -379,13 +433,11 @@
             <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <i class="fas fa-map-pin text-fuji dark:text-blue-400"></i> <span x-text="editingSpotId ? '編輯行程' : '新增行程'"></span>
             </h3>
-
             <div class="space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">時間</label>
                     <input type="time" x-model="modalSpot.time" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 outline-none focus:border-fuji">
                 </div>
-
                 <div class="flex gap-2">
                     <div class="w-1/3">
                         <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">分類</label>
@@ -403,37 +455,25 @@
                         <input type="text" x-model="modalSpot.name" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm outline-none focus:border-fuji" placeholder="地點名稱">
                     </div>
                 </div>
-
-                <div class="flex items-end gap-3 bg-blue-50 dark:bg-gray-800 p-3 rounded-xl border border-blue-100 dark:border-gray-700">
+                <div class="flex items-end gap-3 bg-gray-50 dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
                     <div class="flex-1">
-                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">花費金額 (JPY)</label>
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">預計花費 (JPY)</label>
                         <input type="number" x-model.number="modalSpot.cost" class="w-full bg-white dark:bg-gray-700 dark:text-white border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm outline-none" placeholder="0">
                     </div>
-                    <label class="flex items-center gap-2 mb-2 cursor-pointer">
-                        <input type="checkbox" x-model="modalSpot.includeInBudget" class="w-4 h-4 rounded text-fuji focus:ring-fuji border-gray-300">
-                        <span class="text-xs text-gray-600 dark:text-gray-300 font-bold">加入預算統計</span>
-                    </label>
                 </div>
-
                 <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
                     <div class="flex gap-4 mb-2">
-                        <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
-                            <input type="radio" value="auto" x-model="modalSpot.locationType" class="text-fuji focus:ring-fuji"> 自動地圖
-                        </label>
-                        <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer">
-                            <input type="radio" value="manual" x-model="modalSpot.locationType" class="text-fuji focus:ring-fuji"> 手動網址
-                        </label>
+                        <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer"><input type="radio" value="auto" x-model="modalSpot.locationType" class="text-fuji focus:ring-fuji"> 自動地圖</label>
+                        <label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer"><input type="radio" value="manual" x-model="modalSpot.locationType" class="text-fuji focus:ring-fuji"> 手動網址</label>
                     </div>
                     <div x-show="modalSpot.locationType === 'manual'">
                         <input type="text" x-model="modalSpot.location" placeholder="輸入 Google Maps 連結" class="w-full bg-white dark:bg-gray-700 dark:text-white border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-xs outline-none">
                     </div>
                 </div>
-
                 <div>
                     <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">備註</label>
                     <textarea x-model="modalSpot.desc" rows="3" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm outline-none focus:border-fuji resize-none"></textarea>
                 </div>
-
                 <div>
                     <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">封面圖片</label>
                     <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition relative overflow-hidden">
@@ -446,7 +486,6 @@
                     </label>
                 </div>
             </div>
-
             <div class="flex gap-3 mt-6">
                 <button @click="closeSpotModal()" class="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded-xl font-bold text-sm">取消</button>
                 <button @click="saveSpot()" class="flex-1 py-3 bg-fuji text-white rounded-xl font-bold text-sm shadow-md">確認儲存</button>
@@ -461,7 +500,6 @@
                 selectedDayIdx: 0,
                 isDarkMode: false,
                 currency: 'JPY',
-                
                 bannerImage: localStorage.getItem('trip_banner') || '', 
                 appInfo: localStorage.getItem('trip_info') || '版本 1.0 | 點擊此處編輯說明與注意事項...',
                 
@@ -477,16 +515,112 @@
                     }
                 },
                 saveAppInfo() { localStorage.setItem('trip_info', this.appInfo); },
-                
                 toggleDarkMode() { this.isDarkMode = !this.isDarkMode; },
                 toggleCurrency() { this.currency = this.currency === 'JPY' ? 'TWD' : 'JPY'; },
                 formatMoney(amount) {
-                    if (!amount) return 0;
-                    if (this.currency === 'TWD') return 'NT$ ' + Math.round(amount * this.budget.rate).toLocaleString();
+                    if (!amount) return '0';
+                    if (this.currency === 'TWD') return 'NT$ ' + Math.round(amount * this.walletData.rate).toLocaleString();
                     return '¥ ' + amount.toLocaleString();
                 },
+                getTabTitle() {
+                    if (this.currentTab === 'wallet') return '旅遊錢包';
+                    if (this.currentTab === 'guide') return '指南 & 備忘';
+                    if (this.currentTab === 'weather') return '天氣概覽';
+                    return '';
+                },
 
-                // 📝 分組備忘錄 (Accordion)
+                // 🧮 錢包與記帳邏輯
+                budgetCategories: ['交通', '娛樂', '餐飲', '樂園', '飯店', '服飾', '玩具', '其他'],
+                walletData: {
+                    initialCash: 245000,
+                    rate: 0.22,
+                    transactions: [
+                        { id: 1, desc: '租車費用', category: '交通', amount: 45100, date: '12/24' },
+                        { id: 2, desc: '便利商店', category: '餐飲', amount: 1200, date: '12/22' }
+                    ]
+                },
+                // 計算機 State
+                calc: {
+                    display: '',
+                    equation: '',
+                    category: '餐飲',
+                    desc: ''
+                },
+                calcButtons: ['7','8','9','/','4','5','6','*','1','2','3','-','C','0','=','+','Save'],
+                
+                handleCalc(btn) {
+                    if (btn === 'C') {
+                        this.calc.display = '';
+                        this.calc.equation = '';
+                    } else if (['+','-','*','/'].includes(btn)) {
+                        this.calc.display += btn;
+                    } else if (btn === '=') {
+                        try {
+                            this.calc.display = eval(this.calc.display).toString();
+                        } catch (e) { this.calc.display = 'Error'; }
+                    } else if (btn === 'Save') {
+                        if(!this.calc.display || isNaN(this.calc.display)) return;
+                        this.walletData.transactions.push({
+                            id: Date.now(),
+                            desc: this.calc.desc || '一般消費',
+                            category: this.calc.category,
+                            amount: parseInt(this.calc.display),
+                            date: new Date().toLocaleDateString('zh-TW', {month:'numeric', day:'numeric'})
+                        });
+                        this.calc.display = '';
+                        this.calc.desc = '';
+                    } else {
+                        this.calc.display += btn;
+                    }
+                },
+                removeTransaction(index) {
+                    if(confirm('刪除此筆紀錄？')) this.walletData.transactions.splice(index, 1);
+                },
+                get totalSpent() {
+                    return this.walletData.transactions.reduce((sum, item) => sum + item.amount, 0);
+                },
+                get remainingCash() {
+                    return this.walletData.initialCash - this.totalSpent;
+                },
+                // 圓餅圖數據
+                get sortedCategories() {
+                    const map = {};
+                    this.walletData.transactions.forEach(t => {
+                        map[t.category] = (map[t.category] || 0) + t.amount;
+                    });
+                    const total = this.totalSpent || 1;
+                    return Object.keys(map).map(k => ({
+                        name: k,
+                        value: map[k],
+                        percent: (map[k] / total) * 100
+                    })).sort((a,b) => b.value - a.value);
+                },
+                get pieChartStyle() {
+                    let style = 'conic-gradient(';
+                    let currentDeg = 0;
+                    const colors = { '交通': '#3b82f6', '娛樂': '#facc15', '餐飲': '#f97316', '樂園': '#ec4899', '飯店': '#6366f1', '服飾': '#a855f7', '玩具': '#ef4444', '其他': '#9ca3af' };
+                    
+                    this.sortedCategories.forEach((cat, idx) => {
+                        const deg = (cat.value / (this.totalSpent || 1)) * 360;
+                        style += `${colors[cat.name] || '#ccc'} ${currentDeg}deg ${currentDeg + deg}deg`;
+                        currentDeg += deg;
+                        if(idx < this.sortedCategories.length - 1) style += ', ';
+                    });
+                    style += ')';
+                    return style;
+                },
+                getBudgetBorderColor(cat) {
+                    const colors = { '交通': 'border-blue-500', '娛樂': 'border-yellow-400', '餐飲': 'border-orange-500', '樂園': 'border-pink-500', '飯店': 'border-indigo-500', '服飾': 'border-purple-400', '玩具': 'border-red-400', '其他': 'border-gray-400' };
+                    return colors[cat] || 'border-gray-400';
+                },
+                getBudgetColor(cat) {
+                    const colors = { '交通': 'bg-blue-500', '娛樂': 'bg-yellow-400', '餐飲': 'bg-orange-500', '樂園': 'bg-pink-500', '飯店': 'bg-indigo-500', '服飾': 'bg-purple-400', '玩具': 'bg-red-400', '其他': 'bg-gray-400' };
+                    return colors[cat] || 'bg-gray-400';
+                },
+                isOperator(btn) { return ['+','-','*','/','C','='].includes(btn); },
+
+                // 📝 備忘錄
+                newMemoText: '',
                 memoBlocks: [
                     {
                         title: '行前準備 (必備)',
@@ -507,91 +641,22 @@
                             { type: 'todo', text: 'Esim / 漫遊開通', checked: false },
                             { type: 'todo', text: '充電線 / 插頭', checked: false }
                         ]
-                    },
-                    {
-                        title: '生活用品 & 藥物',
-                        isOpen: false,
-                        newItemText: '',
-                        items: [
-                            { type: 'todo', text: '盥洗用具', checked: false },
-                            { type: 'todo', text: '常備藥 (感冒/腸胃)', checked: false },
-                            { type: 'todo', text: '折疊傘', checked: false }
-                        ]
-                    },
-                    {
-                        title: '衣物 (5天份)',
-                        isOpen: false,
-                        newItemText: '',
-                        items: [
-                            { type: 'todo', text: '換洗衣物', checked: false },
-                            { type: 'todo', text: '睡衣', checked: false },
-                            { type: 'todo', text: '保暖帽/手套', checked: false }
-                        ]
                     }
                 ],
-                
-                addMemoBlock() {
-                    this.memoBlocks.push({ title: '新分類', isOpen: true, newItemText: '', items: [] });
-                },
-                removeMemoBlock(index) {
-                    if(confirm('刪除此分類？')) this.memoBlocks.splice(index, 1);
-                },
+                addMemoBlock() { this.memoBlocks.push({ title: '新分類', isOpen: true, newItemText: '', items: [] }); },
+                removeMemoBlock(index) { if(confirm('刪除此分類？')) this.memoBlocks.splice(index, 1); },
                 addMemoItem(blockIndex, type) {
                     const text = this.memoBlocks[blockIndex].newItemText.trim();
                     if (!text && type !== 'text') return;
-                    this.memoBlocks[blockIndex].items.push({ 
-                        type: type, 
-                        text: text || '筆記內容', 
-                        checked: false 
-                    });
+                    this.memoBlocks[blockIndex].items.push({ type: type, text: text || '內容', checked: false });
                     this.memoBlocks[blockIndex].newItemText = '';
                 },
-                removeMemoItem(blockIndex, itemIndex) {
-                    this.memoBlocks[blockIndex].items.splice(itemIndex, 1);
-                },
+                removeMemoItem(blockIndex, itemIndex) { this.memoBlocks[blockIndex].items.splice(itemIndex, 1); },
 
-                // 💰 預算
-                budgetCategories: ['交通', '娛樂', '餐飲', '樂園', '飯店', '服飾', '玩具', '其他'],
-                budget: {
-                    total: 245000, 
-                    rate: 0.22, 
-                    items: [
-                        { category: '交通', amount: 70000, spent: 45100 }, 
-                        { category: '樂園', amount: 60000, spent: 0 }, 
-                        { category: '餐飲', amount: 56000, spent: 0 }, 
-                        { category: '服飾', amount: 30000, spent: 0 }, 
-                        { category: '玩具', amount: 20000, spent: 0 }, 
-                        { category: '其他', amount: 9000, spent: 0 }
-                    ]
-                },
-                get totalSpent() {
-                    const manualSpent = this.budget.items.reduce((sum, item) => sum + (parseInt(item.spent) || 0), 0);
-                    return manualSpent + this.itinerarySpent;
-                },
-                get itinerarySpent() {
-                    let total = 0;
-                    this.itineraryData.forEach(day => {
-                        day.spots.forEach(spot => {
-                            if (spot.includeInBudget && spot.cost) total += parseInt(spot.cost);
-                        });
-                    });
-                    return total;
-                },
-                addBudgetItem() {
-                    this.budget.items.push({ category: '其他', amount: 0, spent: 0 });
-                },
-                removeBudgetItem(index) {
-                    if(confirm('確定要刪除這個預算項目嗎？')) this.budget.items.splice(index, 1);
-                },
-                getBudgetColor(cat) {
-                    const colors = { '交通': 'bg-blue-500', '娛樂': 'bg-yellow-400', '餐飲': 'bg-orange-500', '樂園': 'bg-pink-500', '飯店': 'bg-indigo-500', '服飾': 'bg-purple-400', '玩具': 'bg-red-400', '其他': 'bg-gray-400' };
-                    return colors[cat] || 'bg-gray-400';
-                },
-
-                // 🗺️ 行程 Modal & Logic
+                // 🗺️ 行程
                 showSpotModal: false,
                 editingSpotId: null,
-                modalSpot: { time: '', type: 'spot', name: '', cost: 0, includeInBudget: false, locationType: 'auto', location: '', desc: '', imgDisplay: '' },
+                modalSpot: { time: '', type: 'spot', name: '', cost: 0, locationType: 'auto', location: '', desc: '', imgDisplay: '' },
                 
                 openSpotModal(spot = null) {
                     if (spot) {
@@ -601,7 +666,6 @@
                             type: spot.type,
                             name: spot.name,
                             cost: spot.cost || 0,
-                            includeInBudget: spot.includeInBudget || false,
                             locationType: spot.locationType || 'auto',
                             location: spot.location || '',
                             desc: spot.desc,
@@ -609,26 +673,21 @@
                         };
                     } else {
                         this.editingSpotId = null;
-                        this.modalSpot = { time: '', type: 'spot', name: '', cost: 0, includeInBudget: false, locationType: 'auto', location: '', desc: '', imgDisplay: '' };
+                        this.modalSpot = { time: '', type: 'spot', name: '', cost: 0, locationType: 'auto', location: '', desc: '', imgDisplay: '' };
                     }
                     this.showSpotModal = true;
                 },
-                closeSpotModal() {
-                    this.showSpotModal = false;
-                },
+                closeSpotModal() { this.showSpotModal = false; },
                 handleSpotImageUpload(event) {
                     const file = event.target.files[0];
                     if (file) {
                         const reader = new FileReader();
-                        reader.onload = (e) => {
-                            this.modalSpot.imgDisplay = e.target.result;
-                        };
+                        reader.onload = (e) => { this.modalSpot.imgDisplay = e.target.result; };
                         reader.readAsDataURL(file);
                     }
                 },
                 saveSpot() {
                     if (!this.modalSpot.name) return alert('請輸入地點名稱');
-                    
                     const spotData = {
                         id: this.editingSpotId || Date.now(),
                         time: this.modalSpot.time,
@@ -636,7 +695,6 @@
                         typeLabel: this.getTypeLabel(this.modalSpot.type),
                         name: this.modalSpot.name,
                         cost: this.modalSpot.cost,
-                        includeInBudget: this.modalSpot.includeInBudget,
                         locationType: this.modalSpot.locationType,
                         location: this.modalSpot.location,
                         desc: this.modalSpot.desc,
@@ -644,12 +702,9 @@
                         tags: ['自訂'],
                         transit: ''
                     };
-
                     if (this.editingSpotId) {
                         const index = this.currentDayData.spots.findIndex(s => s.id === this.editingSpotId);
-                        if (index !== -1) {
-                            this.currentDayData.spots[index] = { ...this.currentDayData.spots[index], ...spotData };
-                        }
+                        if (index !== -1) this.currentDayData.spots[index] = { ...this.currentDayData.spots[index], ...spotData };
                     } else {
                         this.currentDayData.spots.push(spotData);
                     }
@@ -659,9 +714,7 @@
                     const labels = { 'spot': '景點', 'food': '餐廳', 'shop': '購物', 'hotel': '住宿', 'trans': '交通', 'play': '樂園' };
                     return labels[type] || '地點';
                 },
-                editSpot(spot) {
-                    this.openSpotModal(spot);
-                },
+                editSpot(spot) { this.openSpotModal(spot); },
                 getMapLink(spot) {
                     if (spot.locationType === 'manual' && spot.location) return spot.location;
                     return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(spot.name);
@@ -677,56 +730,19 @@
                     { dateStr: '12/27', dayNum: 'D7', weekday: '週六' },
                     { dateStr: '12/28', dayNum: 'D8', weekday: '週日' },
                 ],
-                
                 itineraryData: [
-                    {
-                        weatherAdvice: "抵達日。成田氣溫約 9°C。建議洋蔥式穿搭，準備防風外套。",
-                        spots: [
-                            { id: 101, time: '06:40', type: 'trans', typeLabel: '航班', name: '酷航 TR898 (TPE -> NRT)', desc: '06:40 TPE 起飛 -> 10:45 NRT 抵達 (Terminal 1)', transit: '3hr 5m', cost: 0, includeInBudget: false, tags: ['早班機'], img: 'https://cdn-icons-png.flaticon.com/512/723/723955.png' },
-                            { id: 102, time: '12:05', type: 'trans', typeLabel: '交通', name: '機場巴士 -> 海濱幕張', desc: '12:05 發車，於 12 號站牌搭乘。', transit: '40 min', cost: 1300, includeInBudget: true, tags: ['巴士'], img: 'icon.png' },
-                            { id: 103, time: '13:00', type: 'shop', typeLabel: '購物', name: '三井 Outlet Park 幕張', desc: '停留約 3-4 小時。午餐：Outlet 內解決。', tags: ['Beams', 'Coach', 'Adidas'], mustBuy: true, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Mitsui_Outlet_Park_Makuhari_20200922.jpg/640px-Mitsui_Outlet_Park_Makuhari_20200922.jpg' },
-                            { id: 104, time: '17:00', type: 'hotel', typeLabel: '住宿', name: '星野 1955 Tokyo Bay', desc: '接駁車前往飯店。Lawson 買隔天早餐。', tags: ['Check-in', '海景'], mustEat: true, photoTip: '大廳 2F 休息區', img: 'https://www.hoshinoresorts.com/hoshinoresorts_wp/wp-content/uploads/2024/01/5e5480746e55c65b6f0e97669d04085f.jpg' } 
-                        ]
-                    },
-                    { weatherAdvice: "迪士尼全日。海風強勁，必備圍巾、暖暖包。氣溫 8°C。", spots: [
-                        { id: 201, time: '06:30', type: 'hotel', typeLabel: '寄放', name: '玩具總動員飯店', desc: '搭接駁車去舞濱站，轉單軌去飯店寄行李。', transit: '單軌電車', tags: ['寄行李'], img: 'https://media2.tokyodisneyresort.jp/home/hotel/tsh/top/images/slide01_sp.jpg' },
-                        { id: 202, time: '08:30', type: 'play', typeLabel: '樂園', name: '東京迪士尼樂園 (Land)', desc: '入園衝刺！必抽：美女與野獸 DPA、杯麵。', cost: 10900, includeInBudget: true, tags: ['DPA', '遊行'], mustEat: true, photoTip: '城堡倒影', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Cinderella_Castle_2014.jpg/640px-Cinderella_Castle_2014.jpg' },
-                        { id: 203, time: '15:00', type: 'hotel', typeLabel: '住宿', name: '玩具總動員飯店 Check-in', desc: '入住安迪的房間。晚餐：飯店便利商店或園區解決。', tags: ['安迪房間'], photoTip: '中庭玩具朋友廣場', img: 'icon.png' }
+                    { weatherAdvice: "抵達日。氣溫約 9°C。", spots: [
+                        { id: 101, time: '06:40', type: 'trans', typeLabel: '航班', name: '酷航 TR898', desc: 'TPE -> NRT (T1)', transit: '3hr 5m', cost: 0, img: 'https://cdn-icons-png.flaticon.com/512/723/723955.png', tags: ['早班機'] },
+                        { id: 102, time: '12:05', type: 'trans', typeLabel: '交通', name: '機場巴士 -> 海濱幕張', desc: '12號站牌搭乘', transit: '40 min', cost: 1300, img: 'icon.png', tags: ['巴士'] }
                     ]},
-                    { weatherAdvice: "迪士尼海洋。Fantasy Springs 需提早排隊。氣溫 8°C。", spots: [
-                        { id: 301, time: '07:00', type: 'play', typeLabel: '樂園', name: '東京迪士尼海洋 (Sea)', desc: '目標：Fantasy Springs (冰雪奇緣/彼得潘/魔髮奇緣)。', cost: 10900, includeInBudget: true, tags: ['達菲', '夜間秀'], mustBuy: true, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Tokyo_DisneySea_Aquasphere_2015.jpg/640px-Tokyo_DisneySea_Aquasphere_2015.jpg' },
-                        { id: 302, time: '19:00', type: 'food', typeLabel: '晚餐', name: 'IKSPIARI 伊克斯皮兒莉', desc: '離開園區後在此用餐 (燒肉/壽司)。', tags: ['美食街'], img: 'icon.png' },
-                        { id: 303, time: '21:00', type: 'hotel', typeLabel: '住宿', name: '星野 1955 Tokyo Bay', desc: '搭接駁車回飯店休息。', tags: ['Shuttle Bus'], img: 'https://www.hoshinoresorts.com/hoshinoresorts_wp/wp-content/uploads/2024/01/5e5480746e55c65b6f0e97669d04085f.jpg' }
-                    ]},
-                    { weatherAdvice: "移動至富士山。山區氣溫低至 2°C，可能積雪。", spots: [
-                        { id: 401, time: '10:00', type: 'trans', typeLabel: '租車', name: 'Toyota Rent a Car (浦安)', desc: '取車手續。檢查雪胎、ETC卡。', transit: '2 hr 開車', cost: 45100, includeInBudget: false, tags: ['ETC', '雪胎'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Toyota_Rent_a_Car_Hatanodai.jpg/640px-Toyota_Rent_a_Car_Hatanodai.jpg' },
-                        { id: 402, time: '13:00', type: 'play', typeLabel: '活動', name: '富士天滑雪度假村', desc: '玩雪盆、堆雪人。背景是富士山！', cost: 6500, includeInBudget: true, parking: '¥1000', tags: ['滑雪'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Mount_Fuji_from_Fujiten_Snow_Resort.jpg/640px-Mount_Fuji_from_Fujiten_Snow_Resort.jpg' },
-                        { id: 403, time: '18:00', type: 'food', typeLabel: '晚餐', name: '燒肉 鹿兒島 (Yakiniku)', desc: '預約席。享受黑毛和牛。', cost: 10000, includeInBudget: true, parking: '附設', tags: ['和牛'], mustEat: true, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Yakiniku_roaster.jpg/640px-Yakiniku_roaster.jpg' },
-                        { id: 404, time: '20:00', type: 'hotel', typeLabel: '住宿', name: 'Rental Villa Ooishiso', desc: '大石莊。傳統日式民宿 (榻榻米)。', parking: '免費', img: 'icon.png' }
-                    ]},
-                    { weatherAdvice: "聖誕節 @ 富士五湖。氣溫 0-9°C。注意保暖。", spots: [
-                        { id: 501, time: '08:00', type: 'spot', typeLabel: '景點', name: '大石公園', desc: '晨間散步。拍攝逆富士絕佳點。', parking: '免費', tags: ['散步'], photoTip: '蘆葦草+富士山', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Lake_Kawaguchiko_Oishi_Park_Kochia_Scoparia_2014.jpg/640px-Lake_Kawaguchiko_Oishi_Park_Kochia_Scoparia_2014.jpg' },
-                        { id: 502, time: '11:00', type: 'play', typeLabel: '活動', name: '山中湖 KABA 巴士', desc: '水陸兩用巴士 (需預約)。', cost: 2800, includeInBudget: true, parking: '免費', tags: ['河馬巴士'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Yamanakako_KABA_20120527.jpg/640px-Yamanakako_KABA_20120527.jpg' },
-                        { id: 503, time: '12:30', type: 'food', typeLabel: '午餐', name: 'Houtou Fudou (不動茶屋)', desc: '必吃富士山名物：餺飥麵。', cost: 1200, includeInBudget: true, tags: ['鄉土料理'], mustEat: true, img: 'icon.png' },
-                        { id: 504, time: '14:30', type: 'spot', typeLabel: '景點', name: '富士山全景纜車', desc: '天上山公園。吃狸貓糰子、敲鐘。', cost: 1000, includeInBudget: true, parking: '縣營', tags: ['纜車'], photoTip: '天上的鐘', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Mt.Kachi_Kachi_Ropeway_02.jpg/640px-Mt.Kachi_Kachi_Ropeway_02.jpg' }
-                    ]},
-                    { weatherAdvice: "移動回東京。車程較長，注意塞車。", spots: [
-                        { id: 601, time: '09:30', type: 'play', typeLabel: '活動', name: '富士野生動物園', desc: 'Fuji Safari Park。搭叢林巴士餵獅子。', cost: 4200, includeInBudget: true, parking: '免費', tags: ['親子'], photoTip: '獅子餵食', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Fuji_Safari_Park_Lion_Bus.jpg/640px-Fuji_Safari_Park_Lion_Bus.jpg' },
-                        { id: 602, time: '16:00', type: 'trans', typeLabel: '還車', name: 'Toyota 吾妻橋店', desc: '地址：墨田区吾妻橋3-8-2。記得加滿油再還車。', gas: 'Full', transit: '2.5 hr', tags: ['還車'], img: 'https://cdn-icons-png.flaticon.com/512/3202/3202926.png' },
-                        { id: 603, time: '17:00', type: 'hotel', typeLabel: '住宿', name: 'Asakusa New City Hotel', desc: 'Check-in 後在淺草周邊晚餐、散步。', tags: ['淺草'], img: 'https://cf.bstatic.com/xdata/images/hotel/max1024x768/338274945.jpg?k=2f24168c07d39113658510825319808605511e4c700342683072703875323531&o=' }
-                    ]},
-                    { weatherAdvice: "東京市區逛街。氣溫 10°C。", spots: [
-                        { id: 701, time: '11:00', type: 'shop', typeLabel: '購物', name: 'BEAMS JAPAN 新宿', desc: 'B1-5F 日本選物。', transit: '地鐵', tags: ['潮牌'], mustBuy: true, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Shinjuku_Station_South_Exit_20191124.jpg/640px-Shinjuku_Station_South_Exit_20191124.jpg' },
-                        { id: 702, time: '14:00', type: 'spot', typeLabel: '景點', name: '池袋太陽城水族館', desc: '天空企鵝。Sunshine City 逛街。', cost: 2600, includeInBudget: true, tags: ['親子'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Sunshine_Aquarium_02.jpg/640px-Sunshine_Aquarium_02.jpg' },
-                        { id: 703, time: '18:00', type: 'spot', typeLabel: '活動', name: '東京車站 燈光秀', desc: '丸之內口。晚餐：拉麵街。', tags: ['夜景'], photoTip: '站前廣場', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Tokyo_Station_Marunouchi_Building_at_night_1.jpg/640px-Tokyo_Station_Marunouchi_Building_at_night_1.jpg' }
-                    ]},
-                    { weatherAdvice: "回程日。預留時間前往機場。", spots: [
-                        { id: 801, time: '09:00', type: 'play', typeLabel: '體驗', name: '淺草花屋敷 / 和服體驗', desc: '日本最古老遊樂園。和服拍照。', cost: 5000, includeInBudget: true, tags: ['懷舊'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Asakusa_Hanayashiki_Amusement_Park_2012.jpg/640px-Asakusa_Hanayashiki_Amusement_Park_2012.jpg' },
-                        { id: 802, time: '10:00', type: 'trans', typeLabel: '交通', name: '前往成田機場', desc: '搭乘 Access 特快 / Skyliner 直達機場。', cost: 2500, includeInBudget: true, transit: '60 min', tags: ['Skyliner'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Keisei_AE_series_2010-07.jpg/640px-Keisei_AE_series_2010-07.jpg' },
-                        { id: 803, time: '11:45', type: 'trans', typeLabel: '航班', name: '酷航 TR899 (NRT -> TPE)', desc: '11:45 NRT 起飛 -> 14:55 TPE 抵達', tags: ['回家'], img: 'https://cdn-icons-png.flaticon.com/512/723/723955.png' }
-                    ]}
+                    { weatherAdvice: "迪士尼全日。氣溫 8°C。", spots: [] },
+                    { weatherAdvice: "迪士尼海洋。氣溫 8°C。", spots: [] },
+                    { weatherAdvice: "富士山移動日。", spots: [] },
+                    { weatherAdvice: "聖誕節 @ 富士五湖。", spots: [] },
+                    { weatherAdvice: "回東京。", spots: [] },
+                    { weatherAdvice: "市區逛街。", spots: [] },
+                    { weatherAdvice: "回程日。", spots: [] }
                 ],
-                
                 get currentDayData() { return this.itineraryData[this.selectedDayIdx]; },
                 changeDay(index) { this.selectedDayIdx = index; this.$nextTick(() => { this.initSortable(); }); },
                 getSpotClass(type) {
