@@ -13,11 +13,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
@@ -25,15 +22,15 @@
             theme: {
                 extend: {
                     colors: {
-                        fuji: '#2C5F8A',    // 富士藍
-                        snow: '#FFFFFF',    // 雪白
-                        warm: '#F4F6F8',    // 暖灰
-                        accent: '#E65D5D',  // 強調紅
-                        tagFood: '#F4A261', // 食物標籤
-                        tagShop: '#E76F51', // 購物標籤
-                        tagSpot: '#2A9D8F', // 景點標籤
-                        tagHotel: '#457B9D',// 住宿標籤
-                        tagTrans: '#8D99AE' // 交通標籤
+                        fuji: '#2C5F8A',    
+                        snow: '#FFFFFF',    
+                        warm: '#F4F6F8',    
+                        accent: '#E65D5D',  
+                        tagFood: '#F4A261', 
+                        tagShop: '#E76F51', 
+                        tagSpot: '#2A9D8F', 
+                        tagHotel: '#457B9D',
+                        tagTrans: '#8D99AE' 
                     },
                     fontFamily: {
                         sans: ['"Zen Maru Gothic"', 'sans-serif'],
@@ -48,9 +45,10 @@
         .card-shadow { box-shadow: 0 4px 20px rgba(44, 95, 138, 0.08); }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .bottom-nav { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: rgba(255, 255, 255, 0.9); }
         .drag-handle { cursor: grab; }
-        .sortable-ghost { opacity: 0.4; background: #eef2f6; }
+        /* 隱藏數字輸入框的箭頭 */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
 <body x-data="travelApp()">
@@ -82,7 +80,6 @@
     <main class="pt-[140px] px-4 min-h-screen">
 
         <div x-show="currentTab === 'itinerary'" x-transition.opacity>
-            
             <div class="mb-6 bg-gradient-to-r from-blue-50 to-white p-4 rounded-2xl border border-blue-100 flex items-start gap-4">
                 <div class="text-3xl text-fuji"><i class="fas fa-snowflake"></i></div>
                 <div>
@@ -94,7 +91,6 @@
             <div id="itinerary-list" class="space-y-4">
                 <template x-for="(spot, index) in currentDayData.spots" :key="spot.id">
                     <div :data-id="spot.id" class="bg-white rounded-2xl p-4 card-shadow relative group">
-                        
                         <div class="flex justify-between items-start mb-2">
                             <span :class="getClass(spot.type)" class="text-[10px] px-2 py-1 rounded-full text-white font-bold tracking-wide" x-text="spot.typeLabel"></span>
                             <div class="drag-handle text-gray-300 p-2"><i class="fas fa-grip-lines"></i></div>
@@ -103,15 +99,10 @@
                         <div class="flex gap-4">
                             <div class="w-20 h-20 bg-gray-100 rounded-xl flex-shrink-0 overflow-hidden relative shadow-sm">
                                 <img :src="getImage(spot)" class="w-full h-full object-cover" alt="spot">
-                                <div class="absolute bottom-0 right-0 bg-black/50 text-white text-[8px] p-1 rounded-tl-lg">
-                                    <i class="fas fa-camera"></i>
-                                </div>
                             </div>
-                            
                             <div class="flex-1">
                                 <h3 class="font-bold text-gray-800 text-lg leading-tight" x-text="spot.name"></h3>
                                 <p class="text-xs text-gray-500 mt-1 line-clamp-2" x-text="spot.desc"></p>
-                                
                                 <div x-show="spot.transit" class="mt-2 flex items-center gap-1 text-[10px] text-tagTrans font-bold bg-gray-50 inline-block px-2 py-0.5 rounded">
                                     <i class="fas fa-car-side"></i>
                                     <span x-text="spot.transit"></span>
@@ -132,99 +123,100 @@
                             <div x-show="spot.gas"><i class="fas fa-gas-pump text-accent mr-1"></i> <span x-text="spot.gas"></span></div>
                         </div>
 
-                        <div x-show="spot.photoTip" class="mt-2 bg-yellow-50 p-2 rounded-lg text-[11px] text-yellow-800 flex gap-2 items-start">
-                            <i class="fas fa-lightbulb mt-0.5"></i>
-                            <span x-text="spot.photoTip"></span>
-                        </div>
-
                         <div class="mt-4 flex gap-2">
                             <a :href="'https://www.google.com/maps/search/?api=1&query=' + spot.name" target="_blank" class="flex-1 bg-fuji text-white py-2 rounded-xl text-xs font-bold text-center shadow-md shadow-blue-200">
                                 <i class="fas fa-location-arrow mr-1"></i> 導航
                             </a>
-                            <button class="w-10 h-9 bg-gray-100 rounded-xl text-gray-500 flex items-center justify-center">
-                                <i class="fas fa-camera"></i>
-                            </button>
                         </div>
                     </div>
                 </template>
             </div>
-            
-            <div class="h-24"></div> </div>
+            <div class="h-24"></div> 
+        </div>
 
         <div x-show="currentTab === 'guide'" x-transition.opacity>
             <h2 class="text-2xl font-bold text-gray-800 mb-4">旅行工具箱</h2>
 
             <div class="bg-red-50 border border-red-100 rounded-2xl p-4 mb-4">
-                <h3 class="text-red-800 font-bold mb-2"><i class="fas fa-exclamation-circle mr-2"></i>緊急聯絡</h3>
-                <div class="flex justify-between text-sm text-red-700 mb-2">
-                    <span>警察</span> <span class="font-bold">110</span>
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-red-800 font-bold"><i class="fas fa-exclamation-circle mr-2"></i>緊急聯絡</h3>
+                    <div class="text-xs text-red-600">駐日代表處: +81-3-3280-7811</div>
                 </div>
-                <div class="flex justify-between text-sm text-red-700 mb-2">
-                    <span>消防/救護</span> <span class="font-bold">119</span>
-                </div>
-                <div class="text-xs text-red-600 mt-2 pt-2 border-t border-red-100">
-                    駐日代表處: +81-3-3280-7811
+                <div class="flex gap-4">
+                    <div class="flex-1 bg-white/50 p-2 rounded text-center text-red-700 font-bold text-sm">警察 110</div>
+                    <div class="flex-1 bg-white/50 p-2 rounded text-center text-red-700 font-bold text-sm">救護 119</div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 mb-6">
-                <div class="bg-white p-4 rounded-2xl card-shadow text-center">
-                    <i class="fas fa-plane text-2xl text-fuji mb-2"></i>
-                    <p class="text-xs font-bold text-gray-600">航班資訊</p>
-                    <p class="text-[10px] text-gray-400 mt-1">酷航 TR898 / TR899</p>
-                </div>
-                <div class="bg-white p-4 rounded-2xl card-shadow text-center">
-                    <i class="fas fa-hotel text-2xl text-fuji mb-2"></i>
-                    <p class="text-xs font-bold text-gray-600">訂房憑證</p>
-                    <p class="text-[10px] text-gray-400 mt-1">4 間飯店</p>
-                </div>
-                <div class="bg-white p-4 rounded-2xl card-shadow text-center col-span-2 flex items-center justify-between px-6">
-                    <div class="text-left">
-                        <i class="fas fa-car text-xl text-fuji mb-1"></i>
-                        <p class="text-xs font-bold text-gray-600">租車憑證 (浦安-吾妻橋)</p>
+            <div class="bg-white rounded-2xl p-4 card-shadow mb-6 border-t-4 border-fuji">
+                <div class="flex justify-between items-start mb-4 border-b border-gray-100 pb-4">
+                    <div class="w-1/2 pr-2">
+                        <label class="text-[10px] text-gray-400 block mb-1">總預算 (JPY)</label>
+                        <input type="number" x-model.number="budget.total" class="w-full text-lg font-bold text-gray-800 border-b border-gray-200 focus:border-fuji outline-none bg-transparent" placeholder="0">
                     </div>
-                    <button class="text-xs bg-gray-100 px-3 py-1 rounded-lg">查看</button>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl p-5 card-shadow mb-6">
-                <div class="flex justify-between items-end mb-4">
-                    <div>
-                        <h3 class="font-bold text-gray-800 text-lg">預算規劃</h3>
-                        <p class="text-xs text-gray-500">總預算 ¥<span x-text="budget.total.toLocaleString()"></span></p>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-2xl font-bold text-fuji">¥<span x-text="budget.total.toLocaleString()"></span></div>
-                        <div class="text-[10px] text-gray-400">約 TWD 50,000</div>
+                    <div class="w-1/2 pl-2 text-right">
+                        <label class="text-[10px] text-gray-400 block mb-1">匯率 (JPY -> TWD)</label>
+                        <div class="flex items-center justify-end">
+                            <span class="text-gray-400 mr-1">x</span>
+                            <input type="number" step="0.001" x-model.number="budget.rate" class="w-16 text-right font-bold text-gray-600 border-b border-gray-200 focus:border-fuji outline-none bg-transparent">
+                        </div>
                     </div>
                 </div>
 
-                <div class="space-y-4">
-                    <template x-for="item in budget.items">
-                        <div>
-                            <div class="flex justify-between text-xs mb-1">
-                                <div class="flex items-center gap-2">
-                                    <div :class="item.color" class="w-2 h-2 rounded-full"></div>
-                                    <span class="font-bold text-gray-700" x-text="item.category"></span>
+                <div class="bg-warm rounded-xl p-4 mb-4 text-center">
+                    <div class="text-xs text-gray-500 mb-1">剩餘金額 (Remaining)</div>
+                    <div class="text-3xl font-bold" :class="budget.total - totalSpent >= 0 ? 'text-fuji' : 'text-red-500'">
+                        ¥<span x-text="(budget.total - totalSpent).toLocaleString()"></span>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-1">
+                        約 TWD <span x-text="Math.round((budget.total - totalSpent) * budget.rate).toLocaleString()"></span>
+                    </div>
+                </div>
+
+                <div class="space-y-3 mb-4">
+                    <div class="flex text-[10px] text-gray-400 px-1">
+                        <div class="flex-1">項目</div>
+                        <div class="w-20 text-right">預算</div>
+                        <div class="w-20 text-right">已花費</div>
+                        <div class="w-6"></div>
+                    </div>
+                    
+                    <template x-for="(item, index) in budget.items" :key="index">
+                        <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
+                            <div class="flex-1">
+                                <input type="text" x-model="item.category" class="w-full bg-transparent text-sm font-bold text-gray-700 outline-none" placeholder="項目名稱">
+                                <div class="h-1 w-full bg-gray-200 rounded-full mt-1 overflow-hidden">
+                                    <div :class="item.color" class="h-full" :style="'width: ' + (item.amount > 0 ? (item.spent / item.amount * 100) : 0) + '%'"></div>
                                 </div>
-                                <span class="text-gray-600">¥<span x-text="item.amount.toLocaleString()"></span></span>
                             </div>
-                            <div class="relative w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                                <div :class="item.color" class="absolute left-0 top-0 h-full" :style="'width: ' + (item.amount / budget.total * 100) + '%'"></div>
+                            <div class="w-20">
+                                <input type="number" x-model.number="item.amount" class="w-full text-right bg-transparent text-xs text-gray-500 outline-none border-b border-transparent focus:border-gray-300" placeholder="0">
                             </div>
-                            <p class="text-[10px] text-gray-400 mt-1 pl-4" x-text="item.desc"></p>
+                            <div class="w-20">
+                                <input type="number" x-model.number="item.spent" class="w-full text-right bg-transparent text-sm font-bold text-fuji outline-none border-b border-transparent focus:border-fuji" placeholder="0">
+                            </div>
+                            <button @click="removeBudgetItem(index)" class="w-6 text-gray-300 hover:text-red-400"><i class="fas fa-trash-alt text-xs"></i></button>
                         </div>
                     </template>
                 </div>
 
-                <div class="mt-4 pt-4 border-t border-dashed border-gray-100 flex gap-2 overflow-x-auto hide-scrollbar">
-                    <div class="flex-shrink-0 bg-blue-50 px-3 py-2 rounded-lg border border-blue-100">
-                        <div class="text-[10px] text-gray-500">最大筆支出</div>
-                        <div class="text-xs font-bold text-blue-800">租車交通 27%</div>
+                <button @click="addBudgetItem()" class="w-full py-2 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-xs font-bold hover:border-fuji hover:text-fuji transition">
+                    <i class="fas fa-plus mr-1"></i> 新增預算項目
+                </button>
+
+                <div class="mt-6 pt-4 border-t border-gray-100">
+                    <h4 class="text-xs font-bold text-gray-500 mb-3">花費統計 Summary</h4>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-gray-600">總支出 / 總預算</span>
+                        <span class="font-bold text-fuji">
+                            ¥<span x-text="totalSpent.toLocaleString()"></span> / ¥<span x-text="budget.total.toLocaleString()"></span>
+                        </span>
                     </div>
-                    <div class="flex-shrink-0 bg-orange-50 px-3 py-2 rounded-lg border border-orange-100">
-                        <div class="text-[10px] text-gray-500">每日餐費</div>
-                        <div class="text-xs font-bold text-orange-800">約 ¥7,500/日</div>
+                    <div class="relative w-full h-3 bg-gray-100 rounded-full overflow-hidden mb-2">
+                        <div class="bg-fuji absolute left-0 top-0 h-full transition-all duration-500" :style="'width: ' + (budget.total > 0 ? (totalSpent / budget.total * 100) : 0) + '%'"></div>
+                    </div>
+                    <div class="text-right text-[10px] text-gray-400">
+                        總支出約 TWD <span x-text="Math.round(totalSpent * budget.rate).toLocaleString()"></span>
                     </div>
                 </div>
             </div>
@@ -250,7 +242,6 @@
 
         <div x-show="currentTab === 'weather'" x-transition.opacity>
             <h2 class="text-2xl font-bold text-gray-800 mb-4">天氣概覽</h2>
-            
             <div class="space-y-3">
                 <template x-for="(day, idx) in days" :key="idx">
                     <div class="bg-white p-4 rounded-2xl card-shadow flex items-center justify-between">
@@ -274,20 +265,8 @@
                     </div>
                 </template>
             </div>
-            
-            <div class="mt-6 bg-blue-50 p-4 rounded-2xl border border-blue-100">
-                <h3 class="text-sm font-bold text-fuji mb-2">富士山區特別提醒</h3>
-                <p class="text-xs text-gray-600 mb-2">12月下旬富士五湖地區早晚極冷，平均氣溫在 -2°C 至 8°C。</p>
-                <ul class="text-xs text-gray-600 list-disc list-inside space-y-1">
-                    <li>建議洋蔥式穿法，室內有暖氣。</li>
-                    <li>請準備防水防滑的雪靴。</li>
-                    <li>自駕務必確認車輛配有雪胎 (Snow Tires)。</li>
-                </ul>
-            </div>
-
             <div class="h-24"></div>
         </div>
-
     </main>
 
     <nav class="fixed bottom-6 left-4 right-4 h-16 bg-white/95 backdrop-blur-xl rounded-full shadow-2xl flex justify-around items-center z-50 border border-white/50">
@@ -295,16 +274,12 @@
             <i class="fas fa-map-marked-alt text-xl mb-1"></i>
             <span class="text-[9px] font-bold">行程</span>
         </button>
-        
         <div class="w-[1px] h-6 bg-gray-200"></div>
-
         <button @click="currentTab = 'guide'" :class="{'text-fuji scale-110': currentTab === 'guide', 'text-gray-400': currentTab !== 'guide'}" class="flex flex-col items-center transition-all duration-300 w-16">
             <i class="fas fa-suitcase-rolling text-xl mb-1"></i>
             <span class="text-[9px] font-bold">指南</span>
         </button>
-
         <div class="w-[1px] h-6 bg-gray-200"></div>
-
         <button @click="currentTab = 'weather'" :class="{'text-fuji scale-110': currentTab === 'weather', 'text-gray-400': currentTab !== 'weather'}" class="flex flex-col items-center transition-all duration-300 w-16">
             <i class="fas fa-cloud-sun text-xl mb-1"></i>
             <span class="text-[9px] font-bold">天氣</span>
@@ -317,7 +292,6 @@
                 currentTab: 'itinerary',
                 selectedDayIdx: 0,
                 newItem: '',
-                // 指南頁的打包清單
                 packingList: [
                     { name: '護照 (有效期6個月以上)', checked: false },
                     { name: '駕照日文譯本 (自駕必備)', checked: false },
@@ -325,23 +299,46 @@
                     { name: '酷航機票憑證', checked: false },
                     { name: 'Visit Japan Web QR Code', checked: false },
                     { name: '迪士尼 App (綁定門票)', checked: false },
-                    { name: '日幣現金 (約 ¥100,000)', checked: false },
+                    { name: '日幣現金', checked: false },
                     { name: '網卡 / 漫遊開通', checked: false },
                     { name: '行動電源 (必備)', checked: false },
                     { name: '禦寒衣物 (手套、毛帽)', checked: false },
                 ],
-                // 預算規劃資料
+                // 預算資料 (可輸入、可動態計算)
                 budget: {
                     total: 245000, 
-                    spent: 0,      
+                    rate: 0.22, // 預設匯率，可修改
                     items: [
-                        { category: '交通/租車', label: '租車+油錢+電車', amount: 65000, icon: 'fa-car', color: 'bg-blue-500', desc: '含Toyota租車¥45100、油錢、過路費' },
-                        { category: '樂園/門票', label: '迪士尼+滑雪+動物園', amount: 45000, icon: 'fa-ticket-alt', color: 'bg-pink-500', desc: '迪士尼2日+DPA+滑雪+KABA巴士' },
-                        { category: '餐飲/美食', label: '三餐+燒肉+小吃', amount: 60000, icon: 'fa-utensils', color: 'bg-orange-500', desc: '預留燒肉大餐、每日餐費' },
-                        { category: '購物/伴手禮', label: 'Outlet+藥妝+雜貨', amount: 50000, icon: 'fa-shopping-bag', color: 'bg-purple-500', desc: 'Beams、迪士尼周邊、免稅品' },
-                        { category: '緊急預備金', label: '備用現金', amount: 25000, icon: 'fa-piggy-bank', color: 'bg-gray-400', desc: '以備不時之需' }
+                        { category: '交通/租車', amount: 65000, spent: 45100, color: 'bg-blue-500' },
+                        { category: '樂園/門票', amount: 45000, spent: 0, color: 'bg-pink-500' },
+                        { category: '餐飲/美食', amount: 60000, spent: 5000, color: 'bg-orange-500' },
+                        { category: '購物/伴手禮', amount: 50000, spent: 0, color: 'bg-purple-500' },
+                        { category: '緊急預備金', amount: 25000, spent: 0, color: 'bg-gray-400' }
                     ]
                 },
+                
+                // 計算總支出
+                get totalSpent() {
+                    return this.budget.items.reduce((sum, item) => sum + (parseInt(item.spent) || 0), 0);
+                },
+
+                // 新增預算項目
+                addBudgetItem() {
+                    this.budget.items.push({ 
+                        category: '新項目', 
+                        amount: 0, 
+                        spent: 0, 
+                        color: 'bg-gray-400' 
+                    });
+                },
+
+                // 刪除預算項目
+                removeBudgetItem(index) {
+                    if(confirm('確定要刪除這個預算項目嗎？')) {
+                        this.budget.items.splice(index, 1);
+                    }
+                },
+
                 days: [
                     { dateStr: '12/21', dayNum: 'D1', weekday: '週日' },
                     { dateStr: '12/22', dayNum: 'D2', weekday: '週一' },
@@ -352,7 +349,7 @@
                     { dateStr: '12/27', dayNum: 'D7', weekday: '週六' },
                     { dateStr: '12/28', dayNum: 'D8', weekday: '週日' },
                 ],
-                // 行程資料 (根據你的PDF更新)
+                
                 itineraryData: [
                     // Day 1: 12/21 (日)
                     {
@@ -461,11 +458,9 @@
                 get currentDayData() {
                     return this.itineraryData[this.selectedDayIdx];
                 },
-
                 changeDay(index) {
                     this.selectedDayIdx = index;
                 },
-
                 getClass(type) {
                     const map = {
                         'food': 'bg-tagFood',
@@ -477,14 +472,10 @@
                     };
                     return map[type] || 'bg-fuji';
                 },
-
                 getImage(spot) {
-                    // 如果資料裡有 img 欄位，就用它；沒有就用你的 icon
                     if (spot.img) return spot.img;
                     return 'icon.png';
                 },
-                
-                // Weather helpers
                 getWeatherIcon(idx) {
                     const icons = ['fa-wind', 'fa-sun', 'fa-cloud-sun', 'fa-snowflake', 'fa-snowflake', 'fa-cloud', 'fa-sun', 'fa-plane'];
                     return `fas ${icons[idx]}`;
@@ -503,14 +494,12 @@
                     ];
                     return temps[idx];
                 },
-
                 addItem() {
                     if (this.newItem.trim() !== '') {
                         this.packingList.push({ name: this.newItem, checked: false });
                         this.newItem = '';
                     }
                 },
-
                 init() {
                     this.$nextTick(() => {
                         new Sortable(document.getElementById('itinerary-list'), {
