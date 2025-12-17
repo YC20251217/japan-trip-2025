@@ -275,12 +275,29 @@
                 selectedDayIdx: 0,
                 newItem: '',
                 packingList: [
-                    { name: '護照', checked: false },
-                    { name: '日幣現金', checked: false },
-                    { name: '網卡/漫遊', checked: false },
-                    { name: '雪靴', checked: true },
-                    { name: '駕照日文譯本', checked: false },
+                    { name: '護照 (有效期6個月以上)', checked: false },
+                    { name: '駕照日文譯本 (自駕必備)', checked: false },
+                    { name: '台灣駕照正本 (租車會看)', checked: false },
+                    { name: '酷航機票憑證', checked: false },
+                    { name: 'Visit Japan Web QR Code', checked: false },
+                    { name: '迪士尼 App (綁定門票)', checked: false },
+                    { name: '日幣現金 (約 ¥150,000)', checked: false },
+                    { name: '網卡 / 漫遊開通', checked: false },
+                    { name: '行動電源 (必備)', checked: false },
+                    { name: '禦寒衣物 (手套、毛帽)', checked: false },
                 ],
+                // --- 在 packingList 下方加入這段 ---
+                budget: {
+                    total: 245000, // 你的總預算
+                    spent: 0,      // 之後可做記帳功能
+                    items: [
+                        { category: '交通/租車', label: '租車+油錢+電車', amount: 65000, icon: 'fa-car', color: 'bg-blue-500', desc: '含Toyota租車¥45100、油錢、過路費' },
+                        { category: '樂園/門票', label: '迪士尼+滑雪+動物園', amount: 45000, icon: 'fa-ticket-alt', color: 'bg-pink-500', desc: '迪士尼2日+DPA+滑雪+KABA巴士' },
+                        { category: '餐飲/美食', label: '三餐+燒肉+小吃', amount: 60000, icon: 'fa-utensils', color: 'bg-orange-500', desc: '預留燒肉大餐、每日餐費' },
+                        { category: '購物/伴手禮', label: 'Outlet+藥妝+雜貨', amount: 50000, icon: 'fa-shopping-bag', color: 'bg-purple-500', desc: 'Beams、迪士尼周邊、免稅品' },
+                        { category: '緊急預備金', label: '備用現金', amount: 25000, icon: 'fa-piggy-bank', color: 'bg-gray-400', desc: '以備不時之需' }
+                    ]
+                },
                 days: [
                     { dateStr: '12/21', dayNum: 'D1', weekday: '週日' },
                     { dateStr: '12/22', dayNum: 'D2', weekday: '週一' },
@@ -292,110 +309,106 @@
                     { dateStr: '12/28', dayNum: 'D8', weekday: '週日' },
                 ],
                 // --- 請複製並覆蓋原本的 itineraryData ---
-                itineraryData: [
-                    // Day 1: 12/21
+               itineraryData: [
+                    // Day 1: 12/21 (日)
                     {
-                        weatherAdvice: "抵達日。東京灣區風大，建議準備防風外套。氣溫約 5-11°C。",
+                        weatherAdvice: "抵達日。成田氣溫約 9°C。建議洋蔥式穿搭，準備防風外套。",
                         spots: [
-                            { id: 101, type: 'trans', typeLabel: '交通', name: '成田機場 (NRT)', desc: '抵達、入境手續、領取行李', transit: '60 min 巴士', tags: ['入境'], 
-                              img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Narita_Airport_Terminal_1_South_Wing_Departure_Lobby_20170429.jpg/640px-Narita_Airport_Terminal_1_South_Wing_Departure_Lobby_20170429.jpg' },
-                            { id: 102, type: 'shop', typeLabel: '購物', name: '三井 Outlet Park 幕張', desc: '離機場最近的大型 Outlet，先買禦寒衣物', transit: '30 min 電車', tags: ['Nike', 'BEAMS'], mustBuy: true, 
+                            { id: 101, type: 'trans', typeLabel: '航班', name: '酷航 TR898', desc: '06:40 TPE 起飛 -> 10:45 NRT 抵達 (T1)', transit: '3hr 5m', tags: ['早班機'], 
+                              img: 'https://cdn-icons-png.flaticon.com/512/723/723955.png' },
+                            { id: 102, type: 'trans', typeLabel: '交通', name: '機場巴士 -> 海濱幕張', desc: '12:05 發車，於 12 號站牌搭乘 (票價 ¥1300)', transit: '40 min', tags: ['巴士'], 
+                              img: 'icon.png' },
+                            { id: 103, type: 'shop', typeLabel: '購物', name: '三井 Outlet Park 幕張', desc: '停留約 3-4 小時。午餐：Outlet 內解決。', tags: ['Beams', 'Coach', 'Adidas'], mustBuy: true, 
                               img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Mitsui_Outlet_Park_Makuhari_20200922.jpg/640px-Mitsui_Outlet_Park_Makuhari_20200922.jpg' },
-                            { id: 103, type: 'spot', typeLabel: '景點', name: '新浦安', desc: '前往飯店區域，欣賞東京灣夜景', transit: '15 min 接駁', tags: ['散步'], 
-                              img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Shin-Urayasu_Station_South_Exit_20140920.jpg/640px-Shin-Urayasu_Station_South_Exit_20140920.jpg' },
-                            { id: 104, type: 'hotel', typeLabel: '住宿', name: '星野 1955 Tokyo Bay', desc: '懷舊美式風格，記得預約明日迪士尼接駁', tags: ['Check-in', '親子友善'], mustEat: true, photoTip: '大廳的1955年古董車必拍', 
+                            { id: 104, type: 'hotel', typeLabel: '住宿', name: '星野 1955 Tokyo Bay', desc: '17:00 接駁車前往飯店。Lawson 買隔天早餐。', tags: ['Check-in', '海景'], mustEat: true, photoTip: '大廳 2F 休息區', 
                               img: 'https://www.hoshinoresorts.com/hoshinoresorts_wp/wp-content/uploads/2024/01/5e5480746e55c65b6f0e97669d04085f.jpg' } 
                         ]
                     },
-                    // Day 2: 12/22
+                    // Day 2: 12/22 (一)
                     {
-                        weatherAdvice: "迪士尼全日戶外活動。海風強勁，必備帽子、圍巾、暖暖包。氣溫 4-10°C。",
+                        weatherAdvice: "迪士尼全日。海風強勁，必備圍巾、暖暖包。氣溫 8°C。",
                         spots: [
-                            { id: 201, type: 'trans', typeLabel: '移動', name: '飯店移動', desc: '星野 1955 -> 玩具總動員飯店 (寄放行李)', transit: '20 min 接駁', tags: ['早起'], 
-                              img: 'icon.png' },
-                            { id: 202, type: 'spot', typeLabel: '樂園', name: '東京迪士尼樂園 (Land)', desc: '夢幻與魔法的王國，建議先抽 美女與野獸 DPA', transit: '單軌電車', tags: ['DPA', '遊行'], mustEat: true, photoTip: '城堡正面的倒影或是與氣球合照', 
+                            { id: 201, type: 'hotel', typeLabel: '寄放', name: '玩具總動員飯店', desc: '06:30 搭接駁車去舞濱站，轉單軌去飯店寄行李', transit: '單軌電車', tags: ['寄行李'], 
+                              img: 'https://media2.tokyodisneyresort.jp/home/hotel/tsh/top/images/slide01_sp.jpg' },
+                            { id: 202, type: 'spot', typeLabel: '樂園', name: '東京迪士尼樂園 (Land)', desc: '08:30 入園。必抽：美女與野獸 DPA、杯麵', tags: ['DPA', '遊行'], mustEat: true, photoTip: '城堡倒影', 
                               img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Cinderella_Castle_2014.jpg/640px-Cinderella_Castle_2014.jpg' },
-                            { id: 203, type: 'hotel', typeLabel: '住宿', name: '玩具總動員飯店', desc: '入住安迪的房間，中庭廣場晚上超美', tags: ['Check-in'], photoTip: '門口巨型胡迪與巴斯光年', 
-                              img: 'https://media2.tokyodisneyresort.jp/home/hotel/tsh/top/images/slide01_sp.jpg' }
+                            { id: 203, type: 'hotel', typeLabel: '住宿', name: '玩具總動員飯店', desc: '15:00 Check-in。晚餐：飯店便利商店或園區', tags: ['安迪房間'], photoTip: '中庭玩具朋友廣場', 
+                              img: 'icon.png' }
                         ]
                     },
-                    // Day 3: 12/23
+                    // Day 3: 12/23 (二)
                     {
-                        weatherAdvice: "迪士尼海洋，體感溫度比陸地更低。建議穿著發熱衣。氣溫 3-9°C。",
+                        weatherAdvice: "迪士尼海洋。Fantasy Springs 需提早排隊。氣溫 8°C。",
                         spots: [
-                            { id: 301, type: 'trans', typeLabel: '移動', name: '前往迪士尼海洋', desc: '利用單軌電車移動', transit: '10 min', tags: [], 
-                              img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Disney_Resort_Line_Type_C_yellow_formation_20111011.jpg/640px-Disney_Resort_Line_Type_C_yellow_formation_20111011.jpg' },
-                            { id: 302, type: 'spot', typeLabel: '樂園', name: '東京迪士尼海洋 (Sea)', desc: 'Fantasy Springs 新園區必去！', tags: ['達菲', '夜間秀'], mustBuy: true, photoTip: '地中海港灣夕陽與火山爆發', 
+                            { id: 301, type: 'spot', typeLabel: '樂園', name: '東京迪士尼海洋 (Sea)', desc: '07:00 排隊。目標：Fantasy Springs (冰雪奇緣/彼得潘)', tags: ['達菲', '夜間秀'], mustBuy: true, 
                               img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Tokyo_DisneySea_Aquasphere_2015.jpg/640px-Tokyo_DisneySea_Aquasphere_2015.jpg' },
-                            { id: 303, type: 'hotel', typeLabel: '住宿', name: '星野 1955 Tokyo Bay', desc: '回到第一晚飯店休息', tags: ['Shuttle Bus'], transit: '25 min 接駁', 
+                            { id: 302, type: 'food', typeLabel: '晚餐', name: 'IKSPIARI 伊克斯皮兒莉', desc: '離開園區後在此用餐 (燒肉/壽司)', tags: ['美食街'], 
+                              img: 'icon.png' },
+                            { id: 303, type: 'hotel', typeLabel: '住宿', name: '星野 1955 Tokyo Bay', desc: '搭接駁車回飯店 (21:00)', tags: ['Shuttle Bus'], 
                               img: 'https://www.hoshinoresorts.com/hoshinoresorts_wp/wp-content/uploads/2024/01/5e5480746e55c65b6f0e97669d04085f.jpg' }
                         ]
                     },
-                    // Day 4: 12/24
+                    // Day 4: 12/24 (三)
                     {
-                        weatherAdvice: "前往富士山山區，氣溫驟降。可能積雪，請注意行車安全。氣溫 -2-6°C。",
+                        weatherAdvice: "移動至富士山。山區氣溫低至 2°C，可能積雪。",
                         spots: [
-                            { id: 401, type: 'trans', typeLabel: '租車', name: '浦安やなぎ通り店', desc: '取車手續，檢查雪胎，設定導航', transit: '2 hr 開車', tags: ['ETC卡', '駕照譯本'], 
+                            { id: 401, type: 'trans', typeLabel: '租車', name: 'Toyota Rent a Car', desc: '10:00 浦安やなぎ通り店取車。檢查雪胎。', transit: '2 hr 開車', tags: ['ETC', '雪胎'], 
                               img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Toyota_Rent_a_Car_Hatanodai.jpg/640px-Toyota_Rent_a_Car_Hatanodai.jpg' },
-                            { id: 402, type: 'spot', typeLabel: '活動', name: '富士天滑雪度假村', desc: 'Fujiten Snow Resort，初學者友善', parking: '收費停車場', gas: '出發前加滿', tags: ['滑雪', '雪盆'], photoTip: '滑雪場背景就是富士山', 
+                            { id: 402, type: 'spot', typeLabel: '活動', name: '富士天滑雪度假村', desc: '13:00 抵達。玩雪盆、堆雪人 (門票+雪具)', parking: '¥1000', tags: ['滑雪'], 
                               img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Mount_Fuji_from_Fujiten_Snow_Resort.jpg/640px-Mount_Fuji_from_Fujiten_Snow_Resort.jpg' },
-                            { id: 403, type: 'food', typeLabel: '晚餐', name: '富士山市區燒肉', desc: '享受熱騰騰的日式燒肉', parking: '店鋪附設', tags: ['和牛'], mustEat: true, 
+                            { id: 403, type: 'food', typeLabel: '晚餐', name: '燒肉 鹿兒島 (Yakiniku)', desc: '18:00 預約。享受黑毛和牛。', parking: '附設', tags: ['和牛'], mustEat: true, 
                               img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Yakiniku_roaster.jpg/640px-Yakiniku_roaster.jpg' },
-                            { id: 404, type: 'hotel', typeLabel: '住宿', name: 'Rental Villa Ooishiso', desc: '大石莊，體驗日式民宿風情', parking: '免費停車', 
+                            { id: 404, type: 'hotel', typeLabel: '住宿', name: 'Rental Villa Ooishiso', desc: '大石莊。傳統日式民宿 (榻榻米)。', parking: '免費', 
                               img: 'icon.png' }
                         ]
                     },
-                    // Day 5: 12/25
+                    // Day 5: 12/25 (四)
                     {
-                        weatherAdvice: "聖誕節！富士五湖區寒冷。大石公園風大。氣溫 -3-5°C。",
+                        weatherAdvice: "聖誕節 @ 富士五湖。氣溫 0-9°C。注意保暖。",
                         spots: [
-                            { id: 501, type: 'spot', typeLabel: '景點', name: '大石公園', desc: '清晨散步，看逆富士的最佳地點', parking: '免費', tags: ['散步'], photoTip: '河口湖+薰衣草(枯)+富士山', 
+                            { id: 501, type: 'spot', typeLabel: '景點', name: '大石公園', desc: '08:00 晨間散步。拍攝逆富士絕佳點。', parking: '免費', tags: ['散步'], photoTip: '蘆葦草+富士山', 
                               img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Lake_Kawaguchiko_Oishi_Park_Kochia_Scoparia_2014.jpg/640px-Lake_Kawaguchiko_Oishi_Park_Kochia_Scoparia_2014.jpg' },
-                            { id: 502, type: 'spot', typeLabel: '活動', name: '山中湖水上巴士', desc: '搭乘 KABA 水陸兩用車或天鵝船', parking: '公共停車場', transit: '30 min 開車', tags: ['天鵝船'], 
+                            { id: 502, type: 'spot', typeLabel: '活動', name: '山中湖 KABA 巴士', desc: '11:00 水陸兩用巴士 (需預約)。', parking: '免費', tags: ['河馬巴士'], 
                               img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Yamanakako_KABA_20120527.jpg/640px-Yamanakako_KABA_20120527.jpg' },
-                            { id: 503, type: 'spot', typeLabel: '景點', name: '富士山全景纜車', desc: '天上山公園，敲響天上之鐘', parking: '縣營停車場(付費)', tags: ['狸貓茶屋'], photoTip: '心型鐘與富士山同框', 
-                              img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Mt.Kachi_Kachi_Ropeway_02.jpg/640px-Mt.Kachi_Kachi_Ropeway_02.jpg' },
-                            { id: 504, type: 'hotel', typeLabel: '住宿', name: 'Rental Villa Ooishiso', desc: '返回民宿休息', 
-                              img: 'icon.png' }
+                            { id: 503, type: 'food', typeLabel: '午餐', name: 'Houtou Fudou (不動茶屋)', desc: '必吃富士山名物：餺飥麵。', tags: ['鄉土料理'], mustEat: true, 
+                              img: 'icon.png' },
+                            { id: 504, type: 'spot', typeLabel: '景點', name: '富士山全景纜車', desc: '14:30 天上山公園。吃狸貓糰子。', parking: '縣營', tags: ['纜車'], photoTip: '天上的鐘', 
+                              img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Mt.Kachi_Kachi_Ropeway_02.jpg/640px-Mt.Kachi_Kachi_Ropeway_02.jpg' }
                         ]
                     },
-                    // Day 6: 12/26
+                    // Day 6: 12/26 (五)
                     {
-                        weatherAdvice: "返回東京市區。溫差大，穿脫方便的衣物為主。氣溫 2-9°C。",
+                        weatherAdvice: "移動回東京。車程較長，注意塞車。",
                         spots: [
-                            { id: 601, type: 'spot', typeLabel: '活動', name: '富士野生動物園', desc: 'Fuji Safari Park，搭乘叢林巴士餵食獅子', parking: '免費', tags: ['親子', '動物'], photoTip: '獅子大開口的瞬間', 
+                            { id: 601, type: 'spot', typeLabel: '活動', name: '富士野生動物園', desc: '09:30 入園。搭叢林巴士餵獅子。', parking: '免費', tags: ['親子'], photoTip: '獅子餵食', 
                               img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Fuji_Safari_Park_Lion_Bus.jpg/640px-Fuji_Safari_Park_Lion_Bus.jpg' },
-                            { id: 602, type: 'trans', typeLabel: '還車', name: '還車：吾妻橋店', desc: '地址：墨田区吾妻橋3-8-2。請保留加油收據', gas: '還車前加滿', transit: '2 hr 開車', tags: ['加油'], 
+                            { id: 602, type: 'trans', typeLabel: '還車', name: 'Toyota 吾妻橋店', desc: '16:00 前還車。加油：出發前加滿。', gas: 'Full', transit: '2.5 hr', tags: ['還車'], 
                               img: 'https://cdn-icons-png.flaticon.com/512/3202/3202926.png' },
-                            { id: 603, type: 'spot', typeLabel: '散步', name: '淺草周邊散策', desc: '隅田川步道，看晴空塔', tags: ['晴空塔'], photoTip: '隅田公園拍金色便便與晴空塔', 
-                              img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Kaminarimon_at_night.jpg/640px-Kaminarimon_at_night.jpg' },
-                            { id: 604, type: 'hotel', typeLabel: '住宿', name: 'Asakusa New City Hotel', desc: '新城琢居飯店 check-in', tags: ['淺草'], 
+                            { id: 603, type: 'hotel', typeLabel: '住宿', name: 'Asakusa New City Hotel', desc: 'Check-in 後淺草周邊晚餐。', tags: ['淺草'], 
                               img: 'https://cf.bstatic.com/xdata/images/hotel/max1024x768/338274945.jpg?k=2f24168c07d39113658510825319808605511e4c700342683072703875323531&o=' }
                         ]
                     },
-                    // Day 7: 12/27
+                    // Day 7: 12/27 (六)
                     {
-                        weatherAdvice: "東京市區逛街，室內暖氣強。建議穿薄長袖+厚外套。氣溫 6-12°C。",
+                        weatherAdvice: "東京市區逛街。氣溫 10°C。",
                         spots: [
-                            { id: 701, type: 'shop', typeLabel: '購物', name: 'BEAMS JAPAN 新宿', desc: '日本製造的潮流選物，必逛B1-5F', transit: '30 min 電車', tags: ['潮牌', '伴手禮'], mustBuy: true, 
+                            { id: 701, type: 'shop', typeLabel: '購物', name: 'BEAMS JAPAN 新宿', desc: '11:00 開店。B1-5F 日本選物。', transit: '地鐵', tags: ['潮牌'], mustBuy: true, 
                               img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Shinjuku_Station_South_Exit_20191124.jpg/640px-Shinjuku_Station_South_Exit_20191124.jpg' },
-                            { id: 702, type: 'spot', typeLabel: '景點', name: '池袋太陽城水族館', desc: '天空中的企鵝，都市綠洲', transit: '15 min 電車', tags: ['親子', '企鵝'], photoTip: '頭頂上的企鵝游泳', 
+                            { id: 702, type: 'spot', typeLabel: '景點', name: '池袋太陽城水族館', desc: '14:00 天空企鵝。Sunshine City 逛街。', tags: ['親子'], 
                               img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Sunshine_Aquarium_02.jpg/640px-Sunshine_Aquarium_02.jpg' },
-                            { id: 703, type: 'spot', typeLabel: '活動', name: '東京車站', desc: '欣賞丸之內站舍與迪士尼限定燈展', transit: '20 min 電車', tags: ['夜景', '燈光秀'], photoTip: '站前廣場拍攝全景', 
-                              img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Tokyo_Station_Marunouchi_Building_at_night_1.jpg/640px-Tokyo_Station_Marunouchi_Building_at_night_1.jpg' },
-                            { id: 704, type: 'hotel', typeLabel: '住宿', name: 'Asakusa New City Hotel', desc: '回淺草休息', 
-                              img: 'https://cf.bstatic.com/xdata/images/hotel/max1024x768/338274945.jpg?k=2f24168c07d39113658510825319808605511e4c700342683072703875323531&o=' }
+                            { id: 703, type: 'spot', typeLabel: '活動', name: '東京車站 燈光秀', desc: '18:00 丸之內口。晚餐：拉麵街。', tags: ['夜景'], photoTip: '站前廣場', 
+                              img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Tokyo_Station_Marunouchi_Building_at_night_1.jpg/640px-Tokyo_Station_Marunouchi_Building_at_night_1.jpg' }
                         ]
                     },
-                    // Day 8: 12/28
+                    // Day 8: 12/28 (日)
                     {
-                        weatherAdvice: "回程日。淺草寺周邊人多，注意行李。氣溫 6-12°C。",
+                        weatherAdvice: "回程日。預留時間前往機場。",
                         spots: [
-                            { id: 801, type: 'spot', typeLabel: '體驗', name: '淺草花屋敷 / 和服體驗', desc: '日本最古老遊樂園，穿和服拍照', tags: ['懷舊', '和服'], photoTip: '雷門大燈籠下', 
+                            { id: 801, type: 'spot', typeLabel: '體驗', name: '淺草花屋敷', desc: '日本最古老遊樂園。和服體驗拍照。', tags: ['懷舊'], 
                               img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Asakusa_Hanayashiki_Amusement_Park_2012.jpg/640px-Asakusa_Hanayashiki_Amusement_Park_2012.jpg' },
-                            { id: 802, type: 'trans', typeLabel: '交通', name: '前往成田機場', desc: '搭乘 Access 特快直達機場', transit: '60 min 電車', tags: ['最後採買'], 
+                            { id: 802, type: 'trans', typeLabel: '交通', name: 'Access 特快 -> 機場', desc: '10:00 出發。直達成田機場。', transit: '60 min', tags: ['Skyliner'], 
                               img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Keisei_AE_series_2010-07.jpg/640px-Keisei_AE_series_2010-07.jpg' },
-                            { id: 803, type: 'trans', typeLabel: '航班', name: '起飛回台灣', desc: '平安歸賦', tags: ['Sweet Home'], 
+                            { id: 803, type: 'trans', typeLabel: '航班', name: '酷航 TR899', desc: '11:45 NRT 起飛 -> 14:55 TPE 抵達', tags: ['回家'], 
                               img: 'https://cdn-icons-png.flaticon.com/512/723/723955.png' }
                         ]
                     }
@@ -471,6 +484,7 @@
 </body>
 
 </html>
+
 
 
 
