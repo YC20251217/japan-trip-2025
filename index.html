@@ -46,9 +46,10 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .drag-handle { cursor: grab; }
-        /* 隱藏數字輸入框的箭頭 */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        /* Modal 動畫 */
+        [x-cloak] { display: none !important; }
     </style>
 </head>
 <body x-data="travelApp()">
@@ -135,109 +136,94 @@
         </div>
 
         <div x-show="currentTab === 'guide'" x-transition.opacity>
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">旅行工具箱</h2>
-
-            <div class="bg-red-50 border border-red-100 rounded-2xl p-4 mb-4">
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="text-red-800 font-bold"><i class="fas fa-exclamation-circle mr-2"></i>緊急聯絡</h3>
-                    <div class="text-xs text-red-600">駐日代表處: +81-3-3280-7811</div>
-                </div>
-                <div class="flex gap-4">
-                    <div class="flex-1 bg-white/50 p-2 rounded text-center text-red-700 font-bold text-sm">警察 110</div>
-                    <div class="flex-1 bg-white/50 p-2 rounded text-center text-red-700 font-bold text-sm">救護 119</div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl p-4 card-shadow mb-6 border-t-4 border-fuji">
-                <div class="flex justify-between items-start mb-4 border-b border-gray-100 pb-4">
-                    <div class="w-1/2 pr-2">
-                        <label class="text-[10px] text-gray-400 block mb-1">總預算 (JPY)</label>
-                        <input type="number" x-model.number="budget.total" class="w-full text-lg font-bold text-gray-800 border-b border-gray-200 focus:border-fuji outline-none bg-transparent" placeholder="0">
-                    </div>
-                    <div class="w-1/2 pl-2 text-right">
-                        <label class="text-[10px] text-gray-400 block mb-1">匯率 (JPY -> TWD)</label>
-                        <div class="flex items-center justify-end">
-                            <span class="text-gray-400 mr-1">x</span>
-                            <input type="number" step="0.001" x-model.number="budget.rate" class="w-16 text-right font-bold text-gray-600 border-b border-gray-200 focus:border-fuji outline-none bg-transparent">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-warm rounded-xl p-4 mb-4 text-center">
-                    <div class="text-xs text-gray-500 mb-1">剩餘金額 (Remaining)</div>
-                    <div class="text-3xl font-bold" :class="budget.total - totalSpent >= 0 ? 'text-fuji' : 'text-red-500'">
-                        ¥<span x-text="(budget.total - totalSpent).toLocaleString()"></span>
-                    </div>
-                    <div class="text-xs text-gray-400 mt-1">
-                        約 TWD <span x-text="Math.round((budget.total - totalSpent) * budget.rate).toLocaleString()"></span>
-                    </div>
-                </div>
-
-                <div class="space-y-3 mb-4">
-                    <div class="flex text-[10px] text-gray-400 px-1">
-                        <div class="flex-1">項目</div>
-                        <div class="w-20 text-right">預算</div>
-                        <div class="w-20 text-right">已花費</div>
-                        <div class="w-6"></div>
-                    </div>
-                    
-                    <template x-for="(item, index) in budget.items" :key="index">
-                        <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
-                            <div class="flex-1">
-                                <input type="text" x-model="item.category" class="w-full bg-transparent text-sm font-bold text-gray-700 outline-none" placeholder="項目名稱">
-                                <div class="h-1 w-full bg-gray-200 rounded-full mt-1 overflow-hidden">
-                                    <div :class="item.color" class="h-full" :style="'width: ' + (item.amount > 0 ? (item.spent / item.amount * 100) : 0) + '%'"></div>
-                                </div>
-                            </div>
-                            <div class="w-20">
-                                <input type="number" x-model.number="item.amount" class="w-full text-right bg-transparent text-xs text-gray-500 outline-none border-b border-transparent focus:border-gray-300" placeholder="0">
-                            </div>
-                            <div class="w-20">
-                                <input type="number" x-model.number="item.spent" class="w-full text-right bg-transparent text-sm font-bold text-fuji outline-none border-b border-transparent focus:border-fuji" placeholder="0">
-                            </div>
-                            <button @click="removeBudgetItem(index)" class="w-6 text-gray-300 hover:text-red-400"><i class="fas fa-trash-alt text-xs"></i></button>
-                        </div>
-                    </template>
-                </div>
-
-                <button @click="addBudgetItem()" class="w-full py-2 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-xs font-bold hover:border-fuji hover:text-fuji transition">
-                    <i class="fas fa-plus mr-1"></i> 新增預算項目
-                </button>
-
-                <div class="mt-6 pt-4 border-t border-gray-100">
-                    <h4 class="text-xs font-bold text-gray-500 mb-3">花費統計 Summary</h4>
-                    <div class="flex justify-between text-xs mb-1">
-                        <span class="text-gray-600">總支出 / 總預算</span>
-                        <span class="font-bold text-fuji">
-                            ¥<span x-text="totalSpent.toLocaleString()"></span> / ¥<span x-text="budget.total.toLocaleString()"></span>
-                        </span>
-                    </div>
-                    <div class="relative w-full h-3 bg-gray-100 rounded-full overflow-hidden mb-2">
-                        <div class="bg-fuji absolute left-0 top-0 h-full transition-all duration-500" :style="'width: ' + (budget.total > 0 ? (totalSpent / budget.total * 100) : 0) + '%'"></div>
-                    </div>
-                    <div class="text-right text-[10px] text-gray-400">
-                        總支出約 TWD <span x-text="Math.round(totalSpent * budget.rate).toLocaleString()"></span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl p-4 card-shadow mb-4">
-                <h3 class="font-bold text-gray-800 mb-3">行李清單</h3>
-                <div class="space-y-2">
-                    <template x-for="(item, idx) in packingList" :key="idx">
-                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition">
-                            <input type="checkbox" x-model="item.checked" class="w-5 h-5 rounded text-fuji focus:ring-fuji border-gray-300">
-                            <span :class="{'line-through text-gray-300': item.checked, 'text-gray-700': !item.checked}" class="text-sm" x-text="item.name"></span>
-                        </label>
-                    </template>
-                </div>
-                <div class="mt-3 flex gap-2">
-                    <input type="text" x-model="newItem" @keydown.enter="addItem()" placeholder="新增物品..." class="flex-1 bg-gray-50 border-none rounded-lg text-sm px-3 py-2">
-                    <button @click="addItem()" class="bg-fuji text-white px-3 rounded-lg"><i class="fas fa-plus"></i></button>
-                </div>
-            </div>
             
-            <div class="h-24"></div>
+            <div class="bg-fuji rounded-2xl p-5 shadow-lg mb-6 text-white relative overflow-hidden">
+                <div class="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full"></div>
+                
+                <div class="flex justify-between items-start mb-4 relative z-10">
+                    <div>
+                        <div class="text-[10px] opacity-80 mb-1">剩餘預算 Balance</div>
+                        <div class="text-3xl font-bold">¥<span x-text="(budget.total - totalSpent).toLocaleString()"></span></div>
+                        <div class="text-xs opacity-60 mt-1">≈ TWD <span x-text="Math.round((budget.total - totalSpent) * budget.rate).toLocaleString()"></span></div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[10px] opacity-80 mb-1">總預算</div>
+                        <div class="flex items-center justify-end gap-1">
+                            <span class="text-xs">¥</span>
+                            <input type="number" x-model.number="budget.total" class="w-16 bg-transparent border-b border-white/30 text-right text-sm font-bold focus:outline-none focus:border-white">
+                        </div>
+                        <div class="text-[10px] opacity-60 mt-1 flex justify-end items-center">
+                            匯率 <input type="number" x-model.number="budget.rate" class="w-10 bg-transparent border-b border-white/30 text-right ml-1 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative w-full h-1.5 bg-black/20 rounded-full overflow-hidden z-10">
+                    <div class="bg-accent h-full transition-all duration-500" :style="'width: ' + (budget.total > 0 ? (totalSpent / budget.total * 100) : 0) + '%'"></div>
+                </div>
+                <div class="flex justify-between text-[10px] mt-1 opacity-70 z-10">
+                    <span>已支出 ¥<span x-text="totalSpent.toLocaleString()"></span></span>
+                    <span x-text="Math.round(totalSpent / budget.total * 100) + '%'"></span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <template x-for="cat in budget.categories" :key="cat.id">
+                    <div class="bg-white p-3 rounded-xl card-shadow flex items-center gap-3">
+                        <div :class="cat.color" class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs shrink-0">
+                            <i :class="'fas ' + cat.icon"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <div class="text-[10px] text-gray-400" x-text="cat.name"></div>
+                            <div class="text-sm font-bold text-gray-800">¥<span x-text="getCategoryTotal(cat.id).toLocaleString()"></span></div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div class="mb-24">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">消費紀錄</h2>
+                    <button @click="showAddModal = true" class="bg-fuji text-white text-xs px-3 py-1.5 rounded-lg shadow hover:bg-opacity-90 transition">
+                        <i class="fas fa-plus mr-1"></i> 記一筆
+                    </button>
+                </div>
+
+                <div class="space-y-6">
+                    <template x-for="(dayGroup, index) in groupedTransactions" :key="index">
+                        <div x-show="dayGroup.items.length > 0">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="bg-gray-200 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded" x-text="dayGroup.dayNum"></div>
+                                <div class="text-xs font-bold text-gray-500" x-text="dayGroup.dateStr"></div>
+                                <div class="h-[1px] bg-gray-200 flex-1"></div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <template x-for="tx in dayGroup.items" :key="tx.id">
+                                    <div class="bg-white p-3 rounded-xl border border-gray-100 flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <div :class="getCategoryColor(tx.categoryId)" class="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] shrink-0">
+                                                <i :class="'fas ' + getCategoryIcon(tx.categoryId)"></i>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-bold text-gray-700" x-text="tx.name"></div>
+                                                <div class="text-[10px] text-gray-400" x-text="getCategoryName(tx.categoryId)"></div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-3">
+                                            <div class="text-right">
+                                                <div class="text-sm font-bold text-gray-800">¥<span x-text="tx.amount.toLocaleString()"></span></div>
+                                                <div class="text-[9px] text-gray-400">NT$ <span x-text="Math.round(tx.amount * budget.rate).toLocaleString()"></span></div>
+                                            </div>
+                                            <button @click="deleteTransaction(tx.id)" class="text-gray-300 hover:text-red-400 px-1"><i class="fas fa-times"></i></button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
         </div>
 
         <div x-show="currentTab === 'weather'" x-transition.opacity>
@@ -276,8 +262,8 @@
         </button>
         <div class="w-[1px] h-6 bg-gray-200"></div>
         <button @click="currentTab = 'guide'" :class="{'text-fuji scale-110': currentTab === 'guide', 'text-gray-400': currentTab !== 'guide'}" class="flex flex-col items-center transition-all duration-300 w-16">
-            <i class="fas fa-suitcase-rolling text-xl mb-1"></i>
-            <span class="text-[9px] font-bold">指南</span>
+            <i class="fas fa-wallet text-xl mb-1"></i>
+            <span class="text-[9px] font-bold">記帳</span>
         </button>
         <div class="w-[1px] h-6 bg-gray-200"></div>
         <button @click="currentTab = 'weather'" :class="{'text-fuji scale-110': currentTab === 'weather', 'text-gray-400': currentTab !== 'weather'}" class="flex flex-col items-center transition-all duration-300 w-16">
@@ -286,56 +272,140 @@
         </button>
     </nav>
 
+    <div x-show="showAddModal" x-cloak class="fixed inset-0 z-[60] flex items-end justify-center sm:items-center">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showAddModal = false" x-transition.opacity></div>
+        <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-6 relative z-10" x-transition:enter="transform transition ease-out duration-300" x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0" x-transition:leave="transform transition ease-in duration-200" x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full">
+            
+            <h3 class="text-lg font-bold text-gray-800 mb-4">新增一筆消費</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">日期</label>
+                    <select x-model="newTx.date" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-sm focus:border-fuji outline-none">
+                        <template x-for="day in days">
+                            <option :value="day.dateStr" x-text="day.dayNum + ' - ' + day.dateStr"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">分類</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <template x-for="cat in budget.categories" :key="cat.id">
+                            <div @click="newTx.categoryId = cat.id" 
+                                 :class="newTx.categoryId === cat.id ? 'bg-fuji text-white ring-2 ring-fuji ring-offset-1' : 'bg-gray-50 text-gray-600'"
+                                 class="cursor-pointer rounded-lg p-2 flex flex-col items-center justify-center transition-all">
+                                <i :class="'fas ' + cat.icon + ' text-sm mb-1'"></i>
+                                <span class="text-[10px]" x-text="cat.name"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <div class="flex-1">
+                        <label class="block text-xs text-gray-500 mb-1">項目名稱</label>
+                        <input type="text" x-model="newTx.name" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-sm focus:border-fuji outline-none" placeholder="例：Lawson 炸雞">
+                    </div>
+                    <div class="w-1/3">
+                        <label class="block text-xs text-gray-500 mb-1">金額 (JPY)</label>
+                        <input type="number" x-model.number="newTx.amount" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2 text-sm focus:border-fuji outline-none" placeholder="0">
+                    </div>
+                </div>
+                
+                <button @click="addTransaction()" class="w-full bg-fuji text-white font-bold py-3 rounded-xl mt-2 shadow-lg hover:bg-opacity-90 transition">
+                    確認新增
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function travelApp() {
             return {
                 currentTab: 'itinerary',
                 selectedDayIdx: 0,
-                newItem: '',
-                packingList: [
-                    { name: '護照 (有效期6個月以上)', checked: false },
-                    { name: '駕照日文譯本 (自駕必備)', checked: false },
-                    { name: '台灣駕照正本 (租車會看)', checked: false },
-                    { name: '酷航機票憑證', checked: false },
-                    { name: 'Visit Japan Web QR Code', checked: false },
-                    { name: '迪士尼 App (綁定門票)', checked: false },
-                    { name: '日幣現金', checked: false },
-                    { name: '網卡 / 漫遊開通', checked: false },
-                    { name: '行動電源 (必備)', checked: false },
-                    { name: '禦寒衣物 (手套、毛帽)', checked: false },
-                ],
-                // 預算資料 (可輸入、可動態計算)
+                showAddModal: false,
+                
+                // 新增交易暫存區
+                newTx: {
+                    date: '12/21',
+                    categoryId: 'food',
+                    name: '',
+                    amount: ''
+                },
+
+                // 預算與交易核心資料
                 budget: {
                     total: 245000, 
-                    rate: 0.22, // 預設匯率，可修改
-                    items: [
-                        { category: '交通/租車', amount: 65000, spent: 45100, color: 'bg-blue-500' },
-                        { category: '樂園/門票', amount: 45000, spent: 0, color: 'bg-pink-500' },
-                        { category: '餐飲/美食', amount: 60000, spent: 5000, color: 'bg-orange-500' },
-                        { category: '購物/伴手禮', amount: 50000, spent: 0, color: 'bg-purple-500' },
-                        { category: '緊急預備金', amount: 25000, spent: 0, color: 'bg-gray-400' }
+                    rate: 0.22,
+                    categories: [
+                        { id: 'trans', name: '交通', icon: 'fa-car', color: 'bg-blue-500' },
+                        { id: 'food', name: '餐飲', icon: 'fa-utensils', color: 'bg-orange-500' },
+                        { id: 'shop', name: '購物', icon: 'fa-shopping-bag', color: 'bg-purple-500' },
+                        { id: 'ticket', name: '門票', icon: 'fa-ticket-alt', color: 'bg-pink-500' },
+                        { id: 'hotel', name: '住宿', icon: 'fa-hotel', color: 'bg-indigo-500' },
+                        { id: 'other', name: '其他', icon: 'fa-comment-dollar', color: 'bg-gray-400' }
+                    ],
+                    // 預設交易資料
+                    transactions: [
+                        { id: 1, date: '12/21', categoryId: 'trans', name: '機場巴士', amount: 1300 },
+                        { id: 2, date: '12/24', categoryId: 'trans', name: 'Toyota 租車費', amount: 45100 },
+                        { id: 3, date: '12/22', categoryId: 'ticket', name: '迪士尼 DPA', amount: 4000 },
+                        { id: 4, date: '12/24', categoryId: 'ticket', name: '滑雪場門票', amount: 4500 },
+                        { id: 5, date: '12/24', categoryId: 'food', name: '燒肉鹿兒島', amount: 15000 }
                     ]
                 },
                 
                 // 計算總支出
                 get totalSpent() {
-                    return this.budget.items.reduce((sum, item) => sum + (parseInt(item.spent) || 0), 0);
+                    return this.budget.transactions.reduce((sum, t) => sum + (parseInt(t.amount) || 0), 0);
                 },
 
-                // 新增預算項目
-                addBudgetItem() {
-                    this.budget.items.push({ 
-                        category: '新項目', 
-                        amount: 0, 
-                        spent: 0, 
-                        color: 'bg-gray-400' 
+                // 取得某分類的總支出
+                getCategoryTotal(catId) {
+                    return this.budget.transactions
+                        .filter(t => t.categoryId === catId)
+                        .reduce((sum, t) => sum + (parseInt(t.amount) || 0), 0);
+                },
+
+                // 將交易依日期分組
+                get groupedTransactions() {
+                    return this.days.map(day => {
+                        return {
+                            dateStr: day.dateStr,
+                            dayNum: day.dayNum,
+                            items: this.budget.transactions.filter(t => t.date === day.dateStr)
+                        };
                     });
                 },
 
-                // 刪除預算項目
-                removeBudgetItem(index) {
-                    if(confirm('確定要刪除這個預算項目嗎？')) {
-                        this.budget.items.splice(index, 1);
+                // Helper Functions
+                getCategoryName(id) { return this.budget.categories.find(c => c.id === id)?.name || ''; },
+                getCategoryIcon(id) { return this.budget.categories.find(c => c.id === id)?.icon || ''; },
+                getCategoryColor(id) { return this.budget.categories.find(c => c.id === id)?.color || 'bg-gray-400'; },
+
+                // 新增交易
+                addTransaction() {
+                    if (!this.newTx.name || !this.newTx.amount) return;
+                    
+                    this.budget.transactions.push({
+                        id: Date.now(),
+                        date: this.newTx.date,
+                        categoryId: this.newTx.categoryId,
+                        name: this.newTx.name,
+                        amount: parseInt(this.newTx.amount)
+                    });
+                    
+                    // 重置表單並關閉 Modal
+                    this.newTx.name = '';
+                    this.newTx.amount = '';
+                    this.showAddModal = false;
+                },
+
+                deleteTransaction(id) {
+                    if(confirm('確定要刪除這筆紀錄嗎？')) {
+                        this.budget.transactions = this.budget.transactions.filter(t => t.id !== id);
                     }
                 },
 
@@ -493,12 +563,6 @@
                         {max:5, min:-3}, {max:9, min:2}, {max:12, min:6}, {max:12, min:6}
                     ];
                     return temps[idx];
-                },
-                addItem() {
-                    if (this.newItem.trim() !== '') {
-                        this.packingList.push({ name: this.newItem, checked: false });
-                        this.newItem = '';
-                    }
                 },
                 init() {
                     this.$nextTick(() => {
