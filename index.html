@@ -394,9 +394,10 @@
                 },
 
                 getImage(name) {
-                    // Placeholder logic using Unsplash source for demo
+                    // 改用 placehold.co，保證不會破圖
+                    // 它會產生一個藍底白字的圖片，上面寫著地點名稱
                     const key = name.split(' ')[0]; 
-                    return `https://placehold.co/200x200/2C5F8A/FFFFFF?text=${key}`;
+                    return `https://placehold.co/200x200/2C5F8A/FFFFFF?text=${encodeURIComponent(key)}`;
                 },
                 
                 // Weather helpers
@@ -442,4 +443,5 @@
 </body>
 
 </html>
+
 
