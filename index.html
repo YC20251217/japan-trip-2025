@@ -60,12 +60,10 @@
     <div class="bg-white pb-2 relative">
         <div class="relative w-full h-48 bg-gray-200 banner-placeholder overflow-hidden group">
             <img :src="bannerImage" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105" x-show="bannerImage">
-            
             <div x-show="!bannerImage" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
                 <i class="fas fa-image text-3xl mb-2"></i>
                 <span class="text-xs">點擊上傳封面</span>
             </div>
-
             <label class="absolute bottom-3 right-3 bg-black/50 text-white px-3 py-1.5 rounded-full text-xs backdrop-blur-sm cursor-pointer hover:bg-black/70 transition flex items-center gap-2">
                 <i class="fas fa-camera"></i>
                 <span>更換封面</span>
@@ -113,7 +111,6 @@
     <main class="pt-4 px-4 min-h-screen">
 
         <div x-show="currentTab === 'itinerary'" x-transition.opacity>
-            
             <div class="mb-6 bg-gradient-to-r from-blue-50 to-white p-4 rounded-2xl border border-blue-100 flex items-start gap-4 shadow-sm">
                 <div class="text-3xl text-fuji mt-1"><i class="fas fa-snowflake"></i></div>
                 <div>
@@ -222,10 +219,51 @@
                         </div>
                     </template>
                 </div>
-
                 <button @click="addBudgetItem()" class="w-full py-2 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-xs font-bold hover:border-fuji hover:text-fuji transition">
                     <i class="fas fa-plus mr-1"></i> 新增預算項目
                 </button>
+            </div>
+
+            <div class="bg-yellow-50 rounded-2xl p-5 shadow-md mb-6 relative border border-yellow-100">
+                <div class="flex items-center gap-2 mb-4 border-b border-yellow-200 pb-2">
+                    <i class="fas fa-clipboard-list text-yellow-600 text-lg"></i>
+                    <h3 class="font-bold text-yellow-800 text-lg">行李 & 備忘錄</h3>
+                    <div class="flex-1"></div>
+                    <span class="text-[10px] text-yellow-600 bg-yellow-100 px-2 py-1 rounded-lg">Checklist</span>
+                </div>
+
+                <div class="space-y-2 mb-4">
+                    <template x-for="(item, index) in memoList" :key="index">
+                        <div class="group flex items-center gap-2">
+                            <template x-if="item.type === 'header'">
+                                <div class="w-full flex items-center mt-3 mb-1">
+                                    <span class="font-bold text-fuji text-sm border-b-2 border-fuji/20 pb-0.5 flex-1" x-text="item.text"></span>
+                                    <button @click="removeMemo(index)" class="text-gray-300 hover:text-red-400 ml-2"><i class="fas fa-trash-alt text-xs"></i></button>
+                                </div>
+                            </template>
+                            
+                            <template x-if="item.type === 'todo'">
+                                <div class="w-full flex items-center bg-white/60 p-2 rounded-lg hover:bg-white transition">
+                                    <input type="checkbox" x-model="item.checked" class="w-4 h-4 rounded text-fuji focus:ring-fuji border-gray-300 cursor-pointer">
+                                    <input type="text" x-model="item.text" class="flex-1 ml-3 bg-transparent text-sm text-gray-700 outline-none" :class="{'line-through text-gray-400': item.checked}">
+                                    <button @click="removeMemo(index)" class="text-gray-300 hover:text-red-400 ml-2 opacity-0 group-hover:opacity-100 transition"><i class="fas fa-trash-alt text-xs"></i></button>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="flex gap-2">
+                    <div class="flex-1 flex gap-2">
+                        <input type="text" x-model="newMemoText" @keydown.enter="addMemoItem('todo')" placeholder="輸入項目..." class="w-full bg-white border border-yellow-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-yellow-400">
+                    </div>
+                    <button @click="addMemoItem('todo')" class="bg-yellow-400 text-white w-10 h-10 rounded-lg shadow-sm hover:bg-yellow-500 active:scale-95 transition flex items-center justify-center">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button @click="addMemoItem('header')" class="bg-fuji text-white w-10 h-10 rounded-lg shadow-sm hover:bg-blue-800 active:scale-95 transition flex items-center justify-center" title="新增章節標題">
+                        <i class="fas fa-heading"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="bg-red-50 border border-red-100 rounded-2xl p-4 mb-4">
@@ -236,22 +274,6 @@
                 <div class="flex gap-4">
                     <div class="flex-1 bg-white/50 p-2 rounded text-center text-red-700 font-bold text-sm">警察 110</div>
                     <div class="flex-1 bg-white/50 p-2 rounded text-center text-red-700 font-bold text-sm">救護 119</div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-2xl p-4 card-shadow mb-4">
-                <h3 class="font-bold text-gray-800 mb-3">行李清單</h3>
-                <div class="space-y-2">
-                    <template x-for="(item, idx) in packingList" :key="idx">
-                        <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition">
-                            <input type="checkbox" x-model="item.checked" class="w-5 h-5 rounded text-fuji focus:ring-fuji border-gray-300">
-                            <span :class="{'line-through text-gray-300': item.checked, 'text-gray-700': !item.checked}" class="text-sm" x-text="item.name"></span>
-                        </label>
-                    </template>
-                </div>
-                <div class="mt-3 flex gap-2">
-                    <input type="text" x-model="newItem" @keydown.enter="addItem()" placeholder="新增物品..." class="flex-1 bg-gray-50 border-none rounded-lg text-sm px-3 py-2">
-                    <button @click="addItem()" class="bg-fuji text-white px-3 rounded-lg"><i class="fas fa-plus"></i></button>
                 </div>
             </div>
             
@@ -308,42 +330,50 @@
             return {
                 currentTab: 'itinerary',
                 selectedDayIdx: 0,
-                newItem: '',
-                // 封面圖與版本資訊 (從 LocalStorage 讀取)
+                
+                // 封面圖與版本資訊
                 bannerImage: localStorage.getItem('trip_banner') || '', 
                 appInfo: localStorage.getItem('trip_info') || '版本 1.0 | 點擊此處編輯說明與注意事項...',
-
-                // 處理圖片上傳
                 handleImageUpload(event) {
                     const file = event.target.files[0];
                     if (file) {
                         const reader = new FileReader();
                         reader.onload = (e) => {
                             this.bannerImage = e.target.result;
-                            // 儲存到瀏覽器
                             localStorage.setItem('trip_banner', this.bannerImage);
                         };
                         reader.readAsDataURL(file);
                     }
                 },
-
-                // 儲存文字資訊
                 saveAppInfo() {
                     localStorage.setItem('trip_info', this.appInfo);
                 },
 
-                packingList: [
-                    { name: '護照 (有效期6個月以上)', checked: false },
-                    { name: '駕照日文譯本 (自駕必備)', checked: false },
-                    { name: '台灣駕照正本 (租車會看)', checked: false },
-                    { name: '酷航機票憑證', checked: false },
-                    { name: 'Visit Japan Web QR Code', checked: false },
-                    { name: '迪士尼 App (綁定門票)', checked: false },
-                    { name: '日幣現金', checked: false },
-                    { name: '網卡 / 漫遊開通', checked: false },
-                    { name: '行動電源 (必備)', checked: false },
-                    { name: '禦寒衣物 (手套、毛帽)', checked: false },
+                // 📝 便利貼備忘錄資料 (混合型清單)
+                newMemoText: '',
+                memoList: [
+                    { type: 'header', text: '行前準備' },
+                    { type: 'todo', text: '護照 (有效期6個月以上)', checked: false },
+                    { type: 'todo', text: '駕照日文譯本', checked: false },
+                    { type: 'header', text: '電子產品' },
+                    { type: 'todo', text: '行動電源', checked: false },
+                    { type: 'todo', text: '漫遊開通', checked: false },
                 ],
+                addMemoItem(type) {
+                    if (this.newMemoText.trim() === '') return;
+                    this.memoList.push({ 
+                        type: type, // 'todo' or 'header'
+                        text: this.newMemoText, 
+                        checked: false 
+                    });
+                    this.newMemoText = '';
+                },
+                removeMemo(index) {
+                    if(confirm('刪除此項目？')) {
+                        this.memoList.splice(index, 1);
+                    }
+                },
+
                 budget: {
                     total: 245000, 
                     rate: 0.22, 
