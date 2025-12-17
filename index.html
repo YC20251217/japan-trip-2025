@@ -13,13 +13,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
         tailwind.config = {
-            darkMode: 'class', // 啟用 class 控制夜間模式
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -35,7 +36,6 @@
                         tagPlay: '#E9C46A',
                         tagToy: '#F28482',
                         tagCloth: '#8E9AAF',
-                        // 夜間模式專用色
                         darkBg: '#1a1b1e',
                         darkCard: '#25262b',
                         darkText: '#c1c2c5'
@@ -58,7 +58,7 @@
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         .banner-placeholder {
-            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
         [x-cloak] { display: none !important; }
     </style>
@@ -143,7 +143,6 @@
             <div id="itinerary-list" class="space-y-4">
                 <template x-for="(spot, index) in currentDayData.spots" :key="spot.id">
                     <div :data-id="spot.id" class="bg-white dark:bg-darkCard rounded-2xl p-4 card-shadow relative group border border-transparent dark:border-gray-700 transition-colors">
-                        
                         <div class="flex justify-between items-center mb-2 border-b border-gray-100 dark:border-gray-700 pb-2">
                             <div class="flex items-center gap-2">
                                 <span class="text-sm font-bold text-fuji dark:text-blue-300 font-mono" x-text="spot.time || '--:--'"></span>
@@ -167,14 +166,12 @@
                             </div>
                             <div class="flex-1">
                                 <input type="text" x-model="spot.name" class="w-full font-bold text-gray-800 dark:text-gray-100 text-lg leading-tight bg-transparent border-b border-transparent focus:border-gray-200 dark:focus:border-gray-600 outline-none mb-1">
-                                
                                 <div class="mt-1">
                                     <a :href="getMapLink(spot)" target="_blank" class="text-[11px] text-blue-500 dark:text-blue-400 flex items-center gap-1 hover:underline">
                                         <i class="fas fa-map-marker-alt"></i>
                                         <span x-text="spot.locationType === 'manual' ? '查看地圖連結' : 'Google Maps 導航'"></span>
                                     </a>
                                 </div>
-
                                 <textarea x-model="spot.desc" rows="2" class="w-full text-xs text-gray-500 dark:text-gray-400 mt-2 bg-transparent border-none outline-none resize-none p-0" placeholder="備註..."></textarea>
                             </div>
                         </div>
@@ -260,54 +257,61 @@
                 </button>
             </div>
 
-            <div class="bg-yellow-50 dark:bg-yellow-900/10 rounded-2xl p-5 shadow-md mb-6 relative border border-yellow-100 dark:border-yellow-900/30">
-                <div class="flex items-center gap-2 mb-4 border-b border-yellow-200 dark:border-yellow-800 pb-2">
-                    <i class="fas fa-sticky-note text-yellow-600 text-lg"></i>
-                    <h3 class="font-bold text-yellow-800 dark:text-yellow-500 text-lg">隨身筆記 & 清單</h3>
-                </div>
-
-                <div class="space-y-1 mb-4">
-                    <template x-for="(item, index) in memoList" :key="index">
-                        <div class="group flex items-start gap-2 py-1">
-                            <template x-if="item.type === 'header'">
-                                <div class="w-full flex items-center mt-4 mb-2">
-                                    <div class="w-1 h-4 bg-fuji dark:bg-blue-400 mr-2 rounded-full"></div>
-                                    <input type="text" x-model="item.text" class="font-bold text-fuji dark:text-blue-300 text-sm bg-transparent border-b border-transparent focus:border-fuji outline-none flex-1">
-                                    <button @click="removeMemo(index)" class="text-gray-300 hover:text-red-400 ml-2"><i class="fas fa-trash-alt text-xs"></i></button>
-                                </div>
-                            </template>
-                            <template x-if="item.type === 'todo'">
-                                <div class="w-full flex items-center">
-                                    <input type="checkbox" x-model="item.checked" class="mt-1 w-4 h-4 rounded text-fuji focus:ring-fuji border-gray-300 dark:border-gray-600">
-                                    <input type="text" x-model="item.text" class="flex-1 ml-2 bg-transparent text-sm text-gray-700 dark:text-gray-300 outline-none border-b border-transparent focus:border-yellow-300" :class="{'line-through text-gray-400': item.checked}">
-                                    <button @click="removeMemo(index)" class="text-gray-300 hover:text-red-400 ml-2 opacity-0 group-hover:opacity-100"><i class="fas fa-trash-alt text-xs"></i></button>
-                                </div>
-                            </template>
-                            <template x-if="item.type === 'ordered'">
-                                <div class="w-full flex items-center">
-                                    <span class="text-xs font-bold text-fuji dark:text-blue-300 w-5 text-center" x-text="(getOrderedIndex(index) + '.')"></span>
-                                    <input type="text" x-model="item.text" class="flex-1 ml-1 bg-transparent text-sm text-gray-700 dark:text-gray-300 outline-none border-b border-transparent focus:border-yellow-300">
-                                    <button @click="removeMemo(index)" class="text-gray-300 hover:text-red-400 ml-2 opacity-0 group-hover:opacity-100"><i class="fas fa-trash-alt text-xs"></i></button>
-                                </div>
-                            </template>
-                            <template x-if="item.type === 'text'">
-                                <div class="w-full flex items-start">
-                                    <div class="w-1 h-1 bg-gray-400 rounded-full mt-2 mr-2"></div>
-                                    <textarea x-model="item.text" rows="1" class="flex-1 bg-transparent text-sm text-gray-600 dark:text-gray-400 outline-none resize-none border-b border-transparent focus:border-yellow-300" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
-                                    <button @click="removeMemo(index)" class="text-gray-300 hover:text-red-400 ml-2 opacity-0 group-hover:opacity-100"><i class="fas fa-trash-alt text-xs"></i></button>
-                                </div>
-                            </template>
+            <div class="space-y-4 mb-6">
+                <template x-for="(block, bIdx) in memoBlocks" :key="bIdx">
+                    <div class="bg-yellow-50 dark:bg-yellow-900/10 rounded-2xl shadow-sm border border-yellow-100 dark:border-yellow-900/30 overflow-hidden">
+                        
+                        <div class="p-4 flex items-center justify-between cursor-pointer hover:bg-yellow-100/50 dark:hover:bg-yellow-900/20 transition" @click="block.isOpen = !block.isOpen">
+                            <div class="flex items-center gap-2 flex-1">
+                                <i class="fas fa-chevron-right text-yellow-600 text-xs transition-transform duration-200" :class="{'rotate-90': block.isOpen}"></i>
+                                <input type="text" x-model="block.title" @click.stop class="bg-transparent font-bold text-yellow-800 dark:text-yellow-500 outline-none w-full" placeholder="清單標題...">
+                            </div>
+                            <div class="text-xs text-yellow-600 mr-2" x-show="!block.isOpen">
+                                <span x-text="block.items.length"></span> 項
+                            </div>
+                            <button @click.stop="removeMemoBlock(bIdx)" class="text-gray-300 hover:text-red-400"><i class="fas fa-trash-alt text-xs"></i></button>
                         </div>
-                    </template>
-                </div>
 
-                <div class="flex gap-2 bg-white/60 dark:bg-black/20 p-2 rounded-xl backdrop-blur-sm">
-                    <input type="text" x-model="newMemoText" placeholder="輸入內容..." class="flex-1 bg-white dark:bg-gray-800 dark:text-white border border-yellow-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-yellow-400">
-                    <button @click="addMemo('header')" class="w-8 h-8 rounded-lg bg-fuji text-white shadow-sm flex items-center justify-center text-xs"><i class="fas fa-heading"></i></button>
-                    <button @click="addMemo('todo')" class="w-8 h-8 rounded-lg bg-yellow-400 text-white shadow-sm flex items-center justify-center text-xs"><i class="fas fa-check-square"></i></button>
-                    <button @click="addMemo('ordered')" class="w-8 h-8 rounded-lg bg-orange-400 text-white shadow-sm flex items-center justify-center text-xs"><i class="fas fa-list-ol"></i></button>
-                    <button @click="addMemo('text')" class="w-8 h-8 rounded-lg bg-gray-400 text-white shadow-sm flex items-center justify-center text-xs"><i class="fas fa-align-left"></i></button>
-                </div>
+                        <div x-show="block.isOpen" x-collapse>
+                            <div class="px-4 pb-4 space-y-1">
+                                <template x-for="(item, iIdx) in block.items" :key="iIdx">
+                                    <div class="flex items-start gap-2 py-1 group">
+                                        <template x-if="item.type === 'todo'">
+                                            <div class="flex items-center w-full">
+                                                <input type="checkbox" x-model="item.checked" class="mt-1 w-4 h-4 rounded text-fuji focus:ring-fuji border-gray-300 dark:border-gray-600">
+                                                <input type="text" x-model="item.text" class="flex-1 ml-2 bg-transparent text-sm text-gray-700 dark:text-gray-300 outline-none border-b border-transparent focus:border-yellow-300" :class="{'line-through text-gray-400': item.checked}">
+                                            </div>
+                                        </template>
+                                        <template x-if="item.type === 'ordered'">
+                                            <div class="flex items-center w-full">
+                                                <span class="text-xs font-bold text-fuji dark:text-blue-300 w-5 text-center" x-text="(iIdx + 1) + '.'"></span>
+                                                <input type="text" x-model="item.text" class="flex-1 ml-1 bg-transparent text-sm text-gray-700 dark:text-gray-300 outline-none border-b border-transparent focus:border-yellow-300">
+                                            </div>
+                                        </template>
+                                        <template x-if="item.type === 'text'">
+                                            <div class="flex items-start w-full">
+                                                <div class="w-1 h-1 bg-gray-400 rounded-full mt-2 mr-2"></div>
+                                                <textarea x-model="item.text" rows="1" class="flex-1 bg-transparent text-sm text-gray-600 dark:text-gray-400 outline-none resize-none border-b border-transparent focus:border-yellow-300" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                                            </div>
+                                        </template>
+                                        <button @click="removeMemoItem(bIdx, iIdx)" class="text-gray-300 hover:text-red-400 ml-2 opacity-0 group-hover:opacity-100"><i class="fas fa-trash-alt text-xs"></i></button>
+                                    </div>
+                                </template>
+
+                                <div class="flex gap-2 mt-2 pt-2 border-t border-yellow-200/50">
+                                    <input type="text" x-model="block.newItemText" @keydown.enter="addMemoItem(bIdx, 'todo')" placeholder="新增項目..." class="flex-1 bg-white/50 dark:bg-black/10 border-none rounded-lg px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-yellow-400">
+                                    <button @click="addMemoItem(bIdx, 'todo')" class="text-yellow-600 hover:text-yellow-800 p-1" title="待辦"><i class="fas fa-check-square"></i></button>
+                                    <button @click="addMemoItem(bIdx, 'ordered')" class="text-orange-500 hover:text-orange-700 p-1" title="數字"><i class="fas fa-list-ol"></i></button>
+                                    <button @click="addMemoItem(bIdx, 'text')" class="text-gray-500 hover:text-gray-700 p-1" title="文字"><i class="fas fa-align-left"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <button @click="addMemoBlock()" class="w-full py-3 border-2 border-dashed border-yellow-200 dark:border-yellow-800 text-yellow-500 rounded-xl font-bold hover:bg-yellow-50 dark:hover:bg-yellow-900/10 transition">
+                    <i class="fas fa-folder-plus mr-2"></i> 新增分類清單
+                </button>
             </div>
 
             <div class="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-2xl p-4 mb-4 transition-colors">
@@ -456,7 +460,7 @@
                 currentTab: 'itinerary',
                 selectedDayIdx: 0,
                 isDarkMode: false,
-                currency: 'JPY', // 'JPY' or 'TWD'
+                currency: 'JPY',
                 
                 bannerImage: localStorage.getItem('trip_banner') || '', 
                 appInfo: localStorage.getItem('trip_info') || '版本 1.0 | 點擊此處編輯說明與注意事項...',
@@ -474,60 +478,76 @@
                 },
                 saveAppInfo() { localStorage.setItem('trip_info', this.appInfo); },
                 
-                toggleDarkMode() {
-                    this.isDarkMode = !this.isDarkMode;
-                    // 可加入 localStorage 記憶
-                },
-                toggleCurrency() {
-                    this.currency = this.currency === 'JPY' ? 'TWD' : 'JPY';
-                },
+                toggleDarkMode() { this.isDarkMode = !this.isDarkMode; },
+                toggleCurrency() { this.currency = this.currency === 'JPY' ? 'TWD' : 'JPY'; },
                 formatMoney(amount) {
                     if (!amount) return 0;
-                    if (this.currency === 'TWD') {
-                        return 'NT$ ' + Math.round(amount * this.budget.rate).toLocaleString();
-                    }
+                    if (this.currency === 'TWD') return 'NT$ ' + Math.round(amount * this.budget.rate).toLocaleString();
                     return '¥ ' + amount.toLocaleString();
                 },
 
-                // 📝 備忘錄
-                newMemoText: '',
-                memoList: [
-                    { type: 'header', text: '必備證件' },
-                    { type: 'todo', text: '護照 (有效期6個月以上)', checked: false },
-                    { type: 'todo', text: '駕照 + 日文譯本 (自駕必備)', checked: false },
-                    { type: 'todo', text: '機票/飯店憑證 (電子或紙本)', checked: false },
-                    { type: 'header', text: '財務 & 網路' },
-                    { type: 'todo', text: '日幣現金', checked: false },
-                    { type: 'todo', text: '信用卡 (海外回饋)', checked: false },
-                    { type: 'todo', text: 'Esim / 漫遊開通', checked: false },
-                    { type: 'header', text: '電子產品' },
-                    { type: 'todo', text: '行動電源 (必備)', checked: false },
-                    { type: 'todo', text: '充電線 / 插頭', checked: false },
-                    { type: 'todo', text: '相機 / DJI', checked: false },
-                    { type: 'header', text: '生活用品' },
-                    { type: 'todo', text: '盥洗用具 (牙刷/牙膏)', checked: false },
-                    { type: 'todo', text: '常備藥 (感冒/腸胃)', checked: false },
-                    { type: 'todo', text: '折疊傘', checked: false },
-                    { type: 'header', text: '衣物' },
-                    { type: 'todo', text: '換洗衣物 (5天份)', checked: false },
-                    { type: 'todo', text: '睡衣', checked: false },
-                    { type: 'todo', text: '帽子 / 手套 (禦寒)', checked: false },
-                ],
-                addMemo(type) {
-                    let text = this.newMemoText.trim();
-                    if (!text && type !== 'text') text = '新項目';
-                    this.memoList.push({ type: type, text: text, checked: false });
-                    this.newMemoText = '';
-                },
-                removeMemo(index) {
-                    if(confirm('刪除此項目？')) this.memoList.splice(index, 1);
-                },
-                getOrderedIndex(currentIndex) {
-                    let count = 0;
-                    for (let i = 0; i <= currentIndex; i++) {
-                        if (this.memoList[i].type === 'ordered') count++;
+                // 📝 分組備忘錄 (Accordion)
+                memoBlocks: [
+                    {
+                        title: '行前準備 (必備)',
+                        isOpen: true,
+                        newItemText: '',
+                        items: [
+                            { type: 'todo', text: '護照 (有效期6個月以上)', checked: false },
+                            { type: 'todo', text: '駕照 + 日文譯本 (自駕必備)', checked: false },
+                            { type: 'todo', text: '機票/飯店憑證', checked: false }
+                        ]
+                    },
+                    {
+                        title: '電子產品 & 網路',
+                        isOpen: false,
+                        newItemText: '',
+                        items: [
+                            { type: 'todo', text: '行動電源 (必備)', checked: false },
+                            { type: 'todo', text: 'Esim / 漫遊開通', checked: false },
+                            { type: 'todo', text: '充電線 / 插頭', checked: false }
+                        ]
+                    },
+                    {
+                        title: '生活用品 & 藥物',
+                        isOpen: false,
+                        newItemText: '',
+                        items: [
+                            { type: 'todo', text: '盥洗用具', checked: false },
+                            { type: 'todo', text: '常備藥 (感冒/腸胃)', checked: false },
+                            { type: 'todo', text: '折疊傘', checked: false }
+                        ]
+                    },
+                    {
+                        title: '衣物 (5天份)',
+                        isOpen: false,
+                        newItemText: '',
+                        items: [
+                            { type: 'todo', text: '換洗衣物', checked: false },
+                            { type: 'todo', text: '睡衣', checked: false },
+                            { type: 'todo', text: '保暖帽/手套', checked: false }
+                        ]
                     }
-                    return count;
+                ],
+                
+                addMemoBlock() {
+                    this.memoBlocks.push({ title: '新分類', isOpen: true, newItemText: '', items: [] });
+                },
+                removeMemoBlock(index) {
+                    if(confirm('刪除此分類？')) this.memoBlocks.splice(index, 1);
+                },
+                addMemoItem(blockIndex, type) {
+                    const text = this.memoBlocks[blockIndex].newItemText.trim();
+                    if (!text && type !== 'text') return;
+                    this.memoBlocks[blockIndex].items.push({ 
+                        type: type, 
+                        text: text || '筆記內容', 
+                        checked: false 
+                    });
+                    this.memoBlocks[blockIndex].newItemText = '';
+                },
+                removeMemoItem(blockIndex, itemIndex) {
+                    this.memoBlocks[blockIndex].items.splice(itemIndex, 1);
                 },
 
                 // 💰 預算
@@ -544,19 +564,15 @@
                         { category: '其他', amount: 9000, spent: 0 }
                     ]
                 },
-                // 計算總支出 = 手動記帳 + 自動行程同步
                 get totalSpent() {
                     const manualSpent = this.budget.items.reduce((sum, item) => sum + (parseInt(item.spent) || 0), 0);
                     return manualSpent + this.itinerarySpent;
                 },
-                // 計算行程中勾選加入預算的總額
                 get itinerarySpent() {
                     let total = 0;
                     this.itineraryData.forEach(day => {
                         day.spots.forEach(spot => {
-                            if (spot.includeInBudget && spot.cost) {
-                                total += parseInt(spot.cost);
-                            }
+                            if (spot.includeInBudget && spot.cost) total += parseInt(spot.cost);
                         });
                     });
                     return total;
@@ -568,11 +584,7 @@
                     if(confirm('確定要刪除這個預算項目嗎？')) this.budget.items.splice(index, 1);
                 },
                 getBudgetColor(cat) {
-                    const colors = {
-                        '交通': 'bg-blue-500', '娛樂': 'bg-yellow-400', '餐飲': 'bg-orange-500', 
-                        '樂園': 'bg-pink-500', '飯店': 'bg-indigo-500', '服飾': 'bg-purple-400', 
-                        '玩具': 'bg-red-400', '其他': 'bg-gray-400'
-                    };
+                    const colors = { '交通': 'bg-blue-500', '娛樂': 'bg-yellow-400', '餐飲': 'bg-orange-500', '樂園': 'bg-pink-500', '飯店': 'bg-indigo-500', '服飾': 'bg-purple-400', '玩具': 'bg-red-400', '其他': 'bg-gray-400' };
                     return colors[cat] || 'bg-gray-400';
                 },
 
@@ -667,7 +679,6 @@
                 ],
                 
                 itineraryData: [
-                    // Day 1
                     {
                         weatherAdvice: "抵達日。成田氣溫約 9°C。建議洋蔥式穿搭，準備防風外套。",
                         spots: [
@@ -677,71 +688,43 @@
                             { id: 104, time: '17:00', type: 'hotel', typeLabel: '住宿', name: '星野 1955 Tokyo Bay', desc: '接駁車前往飯店。Lawson 買隔天早餐。', tags: ['Check-in', '海景'], mustEat: true, photoTip: '大廳 2F 休息區', img: 'https://www.hoshinoresorts.com/hoshinoresorts_wp/wp-content/uploads/2024/01/5e5480746e55c65b6f0e97669d04085f.jpg' } 
                         ]
                     },
-                    // Day 2
-                    {
-                        weatherAdvice: "迪士尼全日。海風強勁，必備圍巾、暖暖包。氣溫 8°C。",
-                        spots: [
-                            { id: 201, time: '06:30', type: 'hotel', typeLabel: '寄放', name: '玩具總動員飯店', desc: '搭接駁車去舞濱站，轉單軌去飯店寄行李。', transit: '單軌電車', tags: ['寄行李'], img: 'https://media2.tokyodisneyresort.jp/home/hotel/tsh/top/images/slide01_sp.jpg' },
-                            { id: 202, time: '08:30', type: 'play', typeLabel: '樂園', name: '東京迪士尼樂園 (Land)', desc: '入園衝刺！必抽：美女與野獸 DPA、杯麵。', cost: 10900, includeInBudget: true, tags: ['DPA', '遊行'], mustEat: true, photoTip: '城堡倒影', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Cinderella_Castle_2014.jpg/640px-Cinderella_Castle_2014.jpg' },
-                            { id: 203, time: '15:00', type: 'hotel', typeLabel: '住宿', name: '玩具總動員飯店 Check-in', desc: '入住安迪的房間。晚餐：飯店便利商店或園區解決。', tags: ['安迪房間'], photoTip: '中庭玩具朋友廣場', img: 'icon.png' }
-                        ]
-                    },
-                    // Day 3
-                    {
-                        weatherAdvice: "迪士尼海洋。Fantasy Springs 需提早排隊。氣溫 8°C。",
-                        spots: [
-                            { id: 301, time: '07:00', type: 'play', typeLabel: '樂園', name: '東京迪士尼海洋 (Sea)', desc: '目標：Fantasy Springs (冰雪奇緣/彼得潘/魔髮奇緣)。', cost: 10900, includeInBudget: true, tags: ['達菲', '夜間秀'], mustBuy: true, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Tokyo_DisneySea_Aquasphere_2015.jpg/640px-Tokyo_DisneySea_Aquasphere_2015.jpg' },
-                            { id: 302, time: '19:00', type: 'food', typeLabel: '晚餐', name: 'IKSPIARI 伊克斯皮兒莉', desc: '離開園區後在此用餐 (燒肉/壽司)。', tags: ['美食街'], img: 'icon.png' },
-                            { id: 303, time: '21:00', type: 'hotel', typeLabel: '住宿', name: '星野 1955 Tokyo Bay', desc: '搭接駁車回飯店休息。', tags: ['Shuttle Bus'], img: 'https://www.hoshinoresorts.com/hoshinoresorts_wp/wp-content/uploads/2024/01/5e5480746e55c65b6f0e97669d04085f.jpg' }
-                        ]
-                    },
-                    // Day 4
-                    {
-                        weatherAdvice: "移動至富士山。山區氣溫低至 2°C，可能積雪。",
-                        spots: [
-                            { id: 401, time: '10:00', type: 'trans', typeLabel: '租車', name: 'Toyota Rent a Car (浦安)', desc: '取車手續。檢查雪胎、ETC卡。', transit: '2 hr 開車', cost: 45100, includeInBudget: false, tags: ['ETC', '雪胎'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Toyota_Rent_a_Car_Hatanodai.jpg/640px-Toyota_Rent_a_Car_Hatanodai.jpg' },
-                            { id: 402, time: '13:00', type: 'play', typeLabel: '活動', name: '富士天滑雪度假村', desc: '玩雪盆、堆雪人。背景是富士山！', cost: 6500, includeInBudget: true, parking: '¥1000', tags: ['滑雪'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Mount_Fuji_from_Fujiten_Snow_Resort.jpg/640px-Mount_Fuji_from_Fujiten_Snow_Resort.jpg' },
-                            { id: 403, time: '18:00', type: 'food', typeLabel: '晚餐', name: '燒肉 鹿兒島 (Yakiniku)', desc: '預約席。享受黑毛和牛。', cost: 10000, includeInBudget: true, parking: '附設', tags: ['和牛'], mustEat: true, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Yakiniku_roaster.jpg/640px-Yakiniku_roaster.jpg' },
-                            { id: 404, time: '20:00', type: 'hotel', typeLabel: '住宿', name: 'Rental Villa Ooishiso', desc: '大石莊。傳統日式民宿 (榻榻米)。', parking: '免費', img: 'icon.png' }
-                        ]
-                    },
-                    // Day 5
-                    {
-                        weatherAdvice: "聖誕節 @ 富士五湖。氣溫 0-9°C。注意保暖。",
-                        spots: [
-                            { id: 501, time: '08:00', type: 'spot', typeLabel: '景點', name: '大石公園', desc: '晨間散步。拍攝逆富士絕佳點。', parking: '免費', tags: ['散步'], photoTip: '蘆葦草+富士山', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Lake_Kawaguchiko_Oishi_Park_Kochia_Scoparia_2014.jpg/640px-Lake_Kawaguchiko_Oishi_Park_Kochia_Scoparia_2014.jpg' },
-                            { id: 502, time: '11:00', type: 'play', typeLabel: '活動', name: '山中湖 KABA 巴士', desc: '水陸兩用巴士 (需預約)。', cost: 2800, includeInBudget: true, parking: '免費', tags: ['河馬巴士'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Yamanakako_KABA_20120527.jpg/640px-Yamanakako_KABA_20120527.jpg' },
-                            { id: 503, time: '12:30', type: 'food', typeLabel: '午餐', name: 'Houtou Fudou (不動茶屋)', desc: '必吃富士山名物：餺飥麵。', cost: 1200, includeInBudget: true, tags: ['鄉土料理'], mustEat: true, img: 'icon.png' },
-                            { id: 504, time: '14:30', type: 'spot', typeLabel: '景點', name: '富士山全景纜車', desc: '天上山公園。吃狸貓糰子、敲鐘。', cost: 1000, includeInBudget: true, parking: '縣營', tags: ['纜車'], photoTip: '天上的鐘', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Mt.Kachi_Kachi_Ropeway_02.jpg/640px-Mt.Kachi_Kachi_Ropeway_02.jpg' }
-                        ]
-                    },
-                    // Day 6
-                    {
-                        weatherAdvice: "移動回東京。車程較長，注意塞車。",
-                        spots: [
-                            { id: 601, time: '09:30', type: 'play', typeLabel: '活動', name: '富士野生動物園', desc: 'Fuji Safari Park。搭叢林巴士餵獅子。', cost: 4200, includeInBudget: true, parking: '免費', tags: ['親子'], photoTip: '獅子餵食', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Fuji_Safari_Park_Lion_Bus.jpg/640px-Fuji_Safari_Park_Lion_Bus.jpg' },
-                            { id: 602, time: '16:00', type: 'trans', typeLabel: '還車', name: 'Toyota 吾妻橋店', desc: '地址：墨田区吾妻橋3-8-2。記得加滿油再還車。', gas: 'Full', transit: '2.5 hr', tags: ['還車'], img: 'https://cdn-icons-png.flaticon.com/512/3202/3202926.png' },
-                            { id: 603, time: '17:00', type: 'hotel', typeLabel: '住宿', name: 'Asakusa New City Hotel', desc: 'Check-in 後在淺草周邊晚餐、散步。', tags: ['淺草'], img: 'https://cf.bstatic.com/xdata/images/hotel/max1024x768/338274945.jpg?k=2f24168c07d39113658510825319808605511e4c700342683072703875323531&o=' }
-                        ]
-                    },
-                    // Day 7
-                    {
-                        weatherAdvice: "東京市區逛街。氣溫 10°C。",
-                        spots: [
-                            { id: 701, time: '11:00', type: 'shop', typeLabel: '購物', name: 'BEAMS JAPAN 新宿', desc: 'B1-5F 日本選物。', transit: '地鐵', tags: ['潮牌'], mustBuy: true, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Shinjuku_Station_South_Exit_20191124.jpg/640px-Shinjuku_Station_South_Exit_20191124.jpg' },
-                            { id: 702, time: '14:00', type: 'spot', typeLabel: '景點', name: '池袋太陽城水族館', desc: '天空企鵝。Sunshine City 逛街。', cost: 2600, includeInBudget: true, tags: ['親子'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Sunshine_Aquarium_02.jpg/640px-Sunshine_Aquarium_02.jpg' },
-                            { id: 703, time: '18:00', type: 'spot', typeLabel: '活動', name: '東京車站 燈光秀', desc: '丸之內口。晚餐：拉麵街。', tags: ['夜景'], photoTip: '站前廣場', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Tokyo_Station_Marunouchi_Building_at_night_1.jpg/640px-Tokyo_Station_Marunouchi_Building_at_night_1.jpg' }
-                        ]
-                    },
-                    // Day 8
-                    {
-                        weatherAdvice: "回程日。預留時間前往機場。",
-                        spots: [
-                            { id: 801, time: '09:00', type: 'play', typeLabel: '體驗', name: '淺草花屋敷 / 和服體驗', desc: '日本最古老遊樂園。和服拍照。', cost: 5000, includeInBudget: true, tags: ['懷舊'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Asakusa_Hanayashiki_Amusement_Park_2012.jpg/640px-Asakusa_Hanayashiki_Amusement_Park_2012.jpg' },
-                            { id: 802, time: '10:00', type: 'trans', typeLabel: '交通', name: '前往成田機場', desc: '搭乘 Access 特快 / Skyliner 直達機場。', cost: 2500, includeInBudget: true, transit: '60 min', tags: ['Skyliner'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Keisei_AE_series_2010-07.jpg/640px-Keisei_AE_series_2010-07.jpg' },
-                            { id: 803, time: '11:45', type: 'trans', typeLabel: '航班', name: '酷航 TR899 (NRT -> TPE)', desc: '11:45 NRT 起飛 -> 14:55 TPE 抵達', tags: ['回家'], img: 'https://cdn-icons-png.flaticon.com/512/723/723955.png' }
-                        ]
-                    }
+                    { weatherAdvice: "迪士尼全日。海風強勁，必備圍巾、暖暖包。氣溫 8°C。", spots: [
+                        { id: 201, time: '06:30', type: 'hotel', typeLabel: '寄放', name: '玩具總動員飯店', desc: '搭接駁車去舞濱站，轉單軌去飯店寄行李。', transit: '單軌電車', tags: ['寄行李'], img: 'https://media2.tokyodisneyresort.jp/home/hotel/tsh/top/images/slide01_sp.jpg' },
+                        { id: 202, time: '08:30', type: 'play', typeLabel: '樂園', name: '東京迪士尼樂園 (Land)', desc: '入園衝刺！必抽：美女與野獸 DPA、杯麵。', cost: 10900, includeInBudget: true, tags: ['DPA', '遊行'], mustEat: true, photoTip: '城堡倒影', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Cinderella_Castle_2014.jpg/640px-Cinderella_Castle_2014.jpg' },
+                        { id: 203, time: '15:00', type: 'hotel', typeLabel: '住宿', name: '玩具總動員飯店 Check-in', desc: '入住安迪的房間。晚餐：飯店便利商店或園區解決。', tags: ['安迪房間'], photoTip: '中庭玩具朋友廣場', img: 'icon.png' }
+                    ]},
+                    { weatherAdvice: "迪士尼海洋。Fantasy Springs 需提早排隊。氣溫 8°C。", spots: [
+                        { id: 301, time: '07:00', type: 'play', typeLabel: '樂園', name: '東京迪士尼海洋 (Sea)', desc: '目標：Fantasy Springs (冰雪奇緣/彼得潘/魔髮奇緣)。', cost: 10900, includeInBudget: true, tags: ['達菲', '夜間秀'], mustBuy: true, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Tokyo_DisneySea_Aquasphere_2015.jpg/640px-Tokyo_DisneySea_Aquasphere_2015.jpg' },
+                        { id: 302, time: '19:00', type: 'food', typeLabel: '晚餐', name: 'IKSPIARI 伊克斯皮兒莉', desc: '離開園區後在此用餐 (燒肉/壽司)。', tags: ['美食街'], img: 'icon.png' },
+                        { id: 303, time: '21:00', type: 'hotel', typeLabel: '住宿', name: '星野 1955 Tokyo Bay', desc: '搭接駁車回飯店休息。', tags: ['Shuttle Bus'], img: 'https://www.hoshinoresorts.com/hoshinoresorts_wp/wp-content/uploads/2024/01/5e5480746e55c65b6f0e97669d04085f.jpg' }
+                    ]},
+                    { weatherAdvice: "移動至富士山。山區氣溫低至 2°C，可能積雪。", spots: [
+                        { id: 401, time: '10:00', type: 'trans', typeLabel: '租車', name: 'Toyota Rent a Car (浦安)', desc: '取車手續。檢查雪胎、ETC卡。', transit: '2 hr 開車', cost: 45100, includeInBudget: false, tags: ['ETC', '雪胎'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Toyota_Rent_a_Car_Hatanodai.jpg/640px-Toyota_Rent_a_Car_Hatanodai.jpg' },
+                        { id: 402, time: '13:00', type: 'play', typeLabel: '活動', name: '富士天滑雪度假村', desc: '玩雪盆、堆雪人。背景是富士山！', cost: 6500, includeInBudget: true, parking: '¥1000', tags: ['滑雪'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Mount_Fuji_from_Fujiten_Snow_Resort.jpg/640px-Mount_Fuji_from_Fujiten_Snow_Resort.jpg' },
+                        { id: 403, time: '18:00', type: 'food', typeLabel: '晚餐', name: '燒肉 鹿兒島 (Yakiniku)', desc: '預約席。享受黑毛和牛。', cost: 10000, includeInBudget: true, parking: '附設', tags: ['和牛'], mustEat: true, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Yakiniku_roaster.jpg/640px-Yakiniku_roaster.jpg' },
+                        { id: 404, time: '20:00', type: 'hotel', typeLabel: '住宿', name: 'Rental Villa Ooishiso', desc: '大石莊。傳統日式民宿 (榻榻米)。', parking: '免費', img: 'icon.png' }
+                    ]},
+                    { weatherAdvice: "聖誕節 @ 富士五湖。氣溫 0-9°C。注意保暖。", spots: [
+                        { id: 501, time: '08:00', type: 'spot', typeLabel: '景點', name: '大石公園', desc: '晨間散步。拍攝逆富士絕佳點。', parking: '免費', tags: ['散步'], photoTip: '蘆葦草+富士山', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Lake_Kawaguchiko_Oishi_Park_Kochia_Scoparia_2014.jpg/640px-Lake_Kawaguchiko_Oishi_Park_Kochia_Scoparia_2014.jpg' },
+                        { id: 502, time: '11:00', type: 'play', typeLabel: '活動', name: '山中湖 KABA 巴士', desc: '水陸兩用巴士 (需預約)。', cost: 2800, includeInBudget: true, parking: '免費', tags: ['河馬巴士'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Yamanakako_KABA_20120527.jpg/640px-Yamanakako_KABA_20120527.jpg' },
+                        { id: 503, time: '12:30', type: 'food', typeLabel: '午餐', name: 'Houtou Fudou (不動茶屋)', desc: '必吃富士山名物：餺飥麵。', cost: 1200, includeInBudget: true, tags: ['鄉土料理'], mustEat: true, img: 'icon.png' },
+                        { id: 504, time: '14:30', type: 'spot', typeLabel: '景點', name: '富士山全景纜車', desc: '天上山公園。吃狸貓糰子、敲鐘。', cost: 1000, includeInBudget: true, parking: '縣營', tags: ['纜車'], photoTip: '天上的鐘', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Mt.Kachi_Kachi_Ropeway_02.jpg/640px-Mt.Kachi_Kachi_Ropeway_02.jpg' }
+                    ]},
+                    { weatherAdvice: "移動回東京。車程較長，注意塞車。", spots: [
+                        { id: 601, time: '09:30', type: 'play', typeLabel: '活動', name: '富士野生動物園', desc: 'Fuji Safari Park。搭叢林巴士餵獅子。', cost: 4200, includeInBudget: true, parking: '免費', tags: ['親子'], photoTip: '獅子餵食', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Fuji_Safari_Park_Lion_Bus.jpg/640px-Fuji_Safari_Park_Lion_Bus.jpg' },
+                        { id: 602, time: '16:00', type: 'trans', typeLabel: '還車', name: 'Toyota 吾妻橋店', desc: '地址：墨田区吾妻橋3-8-2。記得加滿油再還車。', gas: 'Full', transit: '2.5 hr', tags: ['還車'], img: 'https://cdn-icons-png.flaticon.com/512/3202/3202926.png' },
+                        { id: 603, time: '17:00', type: 'hotel', typeLabel: '住宿', name: 'Asakusa New City Hotel', desc: 'Check-in 後在淺草周邊晚餐、散步。', tags: ['淺草'], img: 'https://cf.bstatic.com/xdata/images/hotel/max1024x768/338274945.jpg?k=2f24168c07d39113658510825319808605511e4c700342683072703875323531&o=' }
+                    ]},
+                    { weatherAdvice: "東京市區逛街。氣溫 10°C。", spots: [
+                        { id: 701, time: '11:00', type: 'shop', typeLabel: '購物', name: 'BEAMS JAPAN 新宿', desc: 'B1-5F 日本選物。', transit: '地鐵', tags: ['潮牌'], mustBuy: true, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Shinjuku_Station_South_Exit_20191124.jpg/640px-Shinjuku_Station_South_Exit_20191124.jpg' },
+                        { id: 702, time: '14:00', type: 'spot', typeLabel: '景點', name: '池袋太陽城水族館', desc: '天空企鵝。Sunshine City 逛街。', cost: 2600, includeInBudget: true, tags: ['親子'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Sunshine_Aquarium_02.jpg/640px-Sunshine_Aquarium_02.jpg' },
+                        { id: 703, time: '18:00', type: 'spot', typeLabel: '活動', name: '東京車站 燈光秀', desc: '丸之內口。晚餐：拉麵街。', tags: ['夜景'], photoTip: '站前廣場', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Tokyo_Station_Marunouchi_Building_at_night_1.jpg/640px-Tokyo_Station_Marunouchi_Building_at_night_1.jpg' }
+                    ]},
+                    { weatherAdvice: "回程日。預留時間前往機場。", spots: [
+                        { id: 801, time: '09:00', type: 'play', typeLabel: '體驗', name: '淺草花屋敷 / 和服體驗', desc: '日本最古老遊樂園。和服拍照。', cost: 5000, includeInBudget: true, tags: ['懷舊'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Asakusa_Hanayashiki_Amusement_Park_2012.jpg/640px-Asakusa_Hanayashiki_Amusement_Park_2012.jpg' },
+                        { id: 802, time: '10:00', type: 'trans', typeLabel: '交通', name: '前往成田機場', desc: '搭乘 Access 特快 / Skyliner 直達機場。', cost: 2500, includeInBudget: true, transit: '60 min', tags: ['Skyliner'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Keisei_AE_series_2010-07.jpg/640px-Keisei_AE_series_2010-07.jpg' },
+                        { id: 803, time: '11:45', type: 'trans', typeLabel: '航班', name: '酷航 TR899 (NRT -> TPE)', desc: '11:45 NRT 起飛 -> 14:55 TPE 抵達', tags: ['回家'], img: 'https://cdn-icons-png.flaticon.com/512/723/723955.png' }
+                    ]}
                 ],
                 
                 get currentDayData() { return this.itineraryData[this.selectedDayIdx]; },
