@@ -26,14 +26,13 @@
                         snow: '#FFFFFF',    
                         warm: '#F4F6F8',    
                         accent: '#E65D5D',  
-                        tagFood: '#F4A261', 
-                        tagShop: '#E76F51', 
-                        tagSpot: '#2A9D8F', 
-                        tagHotel: '#457B9D',
-                        tagTrans: '#8D99AE',
-                        tagPlay: '#E9C46A',
-                        tagToy: '#F28482',
-                        tagCloth: '#8E9AAF'
+                        tagFood: '#F4A261', // 餐飲
+                        tagShop: '#E76F51', // 購物/服飾
+                        tagSpot: '#2A9D8F', // 景點
+                        tagHotel: '#457B9D',// 飯店
+                        tagTrans: '#8D99AE',// 交通
+                        tagPlay: '#E9C46A', // 娛樂/樂園
+                        tagToy: '#F28482',  // 玩具
                     },
                     fontFamily: {
                         sans: ['"Zen Maru Gothic"', 'sans-serif'],
@@ -80,7 +79,7 @@
                     <div class="relative group">
                         <textarea x-model="appInfo" @input="saveAppInfo" rows="2" 
                             class="w-full text-xs text-gray-500 bg-transparent border border-transparent hover:border-gray-200 focus:border-fuji focus:bg-gray-50 rounded p-1 outline-none resize-none transition"
-                            placeholder="點擊輸入版本資訊或備註..."></textarea>
+                            placeholder="版本 v1.0 | 點擊此處編輯說明與注意事項..."></textarea>
                         <i class="fas fa-pen absolute right-2 top-2 text-gray-300 text-[10px] opacity-0 group-hover:opacity-100 pointer-events-none"></i>
                     </div>
                 </div>
@@ -273,10 +272,10 @@
 
                 <div class="flex gap-2 bg-white/60 p-2 rounded-xl backdrop-blur-sm">
                     <input type="text" x-model="newMemoText" placeholder="輸入內容..." class="flex-1 bg-white border border-yellow-200 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-yellow-400">
-                    <button @click="addMemo('header')" class="w-8 h-8 rounded-lg bg-fuji text-white shadow-sm flex items-center justify-center text-xs"><i class="fas fa-heading"></i></button>
-                    <button @click="addMemo('todo')" class="w-8 h-8 rounded-lg bg-yellow-400 text-white shadow-sm flex items-center justify-center text-xs"><i class="fas fa-check-square"></i></button>
-                    <button @click="addMemo('ordered')" class="w-8 h-8 rounded-lg bg-orange-400 text-white shadow-sm flex items-center justify-center text-xs"><i class="fas fa-list-ol"></i></button>
-                    <button @click="addMemo('text')" class="w-8 h-8 rounded-lg bg-gray-400 text-white shadow-sm flex items-center justify-center text-xs"><i class="fas fa-align-left"></i></button>
+                    <button @click="addMemo('header')" class="w-8 h-8 rounded-lg bg-fuji text-white shadow-sm flex items-center justify-center text-xs" title="大標題"><i class="fas fa-heading"></i></button>
+                    <button @click="addMemo('todo')" class="w-8 h-8 rounded-lg bg-yellow-400 text-white shadow-sm flex items-center justify-center text-xs" title="待辦"><i class="fas fa-check-square"></i></button>
+                    <button @click="addMemo('ordered')" class="w-8 h-8 rounded-lg bg-orange-400 text-white shadow-sm flex items-center justify-center text-xs" title="數字"><i class="fas fa-list-ol"></i></button>
+                    <button @click="addMemo('text')" class="w-8 h-8 rounded-lg bg-gray-400 text-white shadow-sm flex items-center justify-center text-xs" title="文字"><i class="fas fa-align-left"></i></button>
                 </div>
             </div>
 
@@ -430,12 +429,28 @@
                 saveAppInfo() { localStorage.setItem('trip_info', this.appInfo); },
 
                 newMemoText: '',
+                // 根據 PDF 建立的預設清單
                 memoList: [
-                    { type: 'header', text: '行前準備' },
+                    { type: 'header', text: '必備證件' },
                     { type: 'todo', text: '護照 (有效期6個月以上)', checked: false },
-                    { type: 'todo', text: '駕照日文譯本', checked: false },
-                    { type: 'ordered', text: '網路開通' },
-                    { type: 'text', text: '記得帶兩腳插頭轉接器' }
+                    { type: 'todo', text: '駕照 + 日文譯本 (自駕必備)', checked: false },
+                    { type: 'todo', text: '機票/飯店憑證 (電子或紙本)', checked: false },
+                    { type: 'header', text: '財務 & 網路' },
+                    { type: 'todo', text: '日幣現金', checked: false },
+                    { type: 'todo', text: '信用卡 (海外回饋)', checked: false },
+                    { type: 'todo', text: 'Esim / 漫遊開通', checked: false },
+                    { type: 'header', text: '電子產品' },
+                    { type: 'todo', text: '行動電源 (必備)', checked: false },
+                    { type: 'todo', text: '充電線 / 插頭', checked: false },
+                    { type: 'todo', text: '相機 / DJI', checked: false },
+                    { type: 'header', text: '生活用品' },
+                    { type: 'todo', text: '盥洗用具 (牙刷/牙膏)', checked: false },
+                    { type: 'todo', text: '常備藥 (感冒/腸胃)', checked: false },
+                    { type: 'todo', text: '折疊傘', checked: false },
+                    { type: 'header', text: '衣物' },
+                    { type: 'todo', text: '換洗衣物 (5天份)', checked: false },
+                    { type: 'todo', text: '睡衣', checked: false },
+                    { type: 'todo', text: '帽子 / 手套 (禦寒)', checked: false },
                 ],
                 addMemo(type) {
                     let text = this.newMemoText.trim();
@@ -454,16 +469,18 @@
                     return count;
                 },
 
+                // 預算分類與預設值
                 budgetCategories: ['交通', '娛樂', '餐飲', '樂園', '飯店', '服飾', '玩具', '其他'],
                 budget: {
                     total: 245000, 
                     rate: 0.22, 
                     items: [
-                        { category: '交通', amount: 65000, spent: 45100 },
-                        { category: '樂園', amount: 45000, spent: 0 },
-                        { category: '餐飲', amount: 60000, spent: 5000 },
-                        { category: '服飾', amount: 50000, spent: 0 },
-                        { category: '其他', amount: 25000, spent: 0 }
+                        { category: '交通', amount: 70000, spent: 45100 }, // 租車約 45100 + 油錢/地鐵
+                        { category: '樂園', amount: 60000, spent: 0 }, // Disney x2 + Safari + Snow
+                        { category: '餐飲', amount: 56000, spent: 0 }, // 8天餐費預估
+                        { category: '服飾', amount: 30000, spent: 0 }, // Outlet/Beams
+                        { category: '玩具', amount: 20000, spent: 0 }, // Disney Store
+                        { category: '其他', amount: 9000, spent: 0 }
                     ]
                 },
                 get totalSpent() {
@@ -490,7 +507,6 @@
                 
                 openSpotModal(spot = null) {
                     if (spot) {
-                        // 編輯模式：複製現有資料
                         this.editingSpotId = spot.id;
                         this.modalSpot = {
                             time: spot.time || '',
@@ -502,7 +518,6 @@
                             imgDisplay: spot.img
                         };
                     } else {
-                        // 新增模式
                         this.editingSpotId = null;
                         this.modalSpot = { time: '', type: 'spot', name: '', locationType: 'auto', location: '', desc: '', imgDisplay: '' };
                     }
@@ -539,13 +554,11 @@
                     };
 
                     if (this.editingSpotId) {
-                        // 更新現有
                         const index = this.currentDayData.spots.findIndex(s => s.id === this.editingSpotId);
                         if (index !== -1) {
                             this.currentDayData.spots[index] = { ...this.currentDayData.spots[index], ...spotData };
                         }
                     } else {
-                        // 新增
                         this.currentDayData.spots.push(spotData);
                     }
                     
@@ -575,22 +588,81 @@
                 ],
                 
                 itineraryData: [
+                    // Day 1: 12/21
                     {
                         weatherAdvice: "抵達日。成田氣溫約 9°C。建議洋蔥式穿搭，準備防風外套。",
                         spots: [
-                            { id: 101, time: '06:40', type: 'trans', typeLabel: '航班', name: '酷航 TR898', desc: '06:40 TPE 起飛 -> 10:45 NRT 抵達 (T1)', transit: '3hr 5m', tags: ['早班機'], img: 'https://cdn-icons-png.flaticon.com/512/723/723955.png' },
+                            { id: 101, time: '06:40', type: 'trans', typeLabel: '航班', name: '酷航 TR898 (TPE -> NRT)', desc: '06:40 TPE 起飛 -> 10:45 NRT 抵達 (Terminal 1)', transit: '3hr 5m', tags: ['早班機'], img: 'https://cdn-icons-png.flaticon.com/512/723/723955.png' },
                             { id: 102, time: '12:05', type: 'trans', typeLabel: '交通', name: '機場巴士 -> 海濱幕張', desc: '12:05 發車，於 12 號站牌搭乘 (票價 ¥1300)', transit: '40 min', tags: ['巴士'], img: 'icon.png' },
                             { id: 103, time: '13:00', type: 'shop', typeLabel: '購物', name: '三井 Outlet Park 幕張', desc: '停留約 3-4 小時。午餐：Outlet 內解決。', tags: ['Beams', 'Coach', 'Adidas'], mustBuy: true, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Mitsui_Outlet_Park_Makuhari_20200922.jpg/640px-Mitsui_Outlet_Park_Makuhari_20200922.jpg' },
                             { id: 104, time: '17:00', type: 'hotel', typeLabel: '住宿', name: '星野 1955 Tokyo Bay', desc: '接駁車前往飯店。Lawson 買隔天早餐。', tags: ['Check-in', '海景'], mustEat: true, photoTip: '大廳 2F 休息區', img: 'https://www.hoshinoresorts.com/hoshinoresorts_wp/wp-content/uploads/2024/01/5e5480746e55c65b6f0e97669d04085f.jpg' } 
                         ]
                     },
-                    { weatherAdvice: "迪士尼全日。海風強勁，必備圍巾、暖暖包。氣溫 8°C。", spots: [] },
-                    { weatherAdvice: "迪士尼海洋。Fantasy Springs 需提早排隊。氣溫 8°C。", spots: [] },
-                    { weatherAdvice: "移動至富士山。山區氣溫低至 2°C，可能積雪。", spots: [] },
-                    { weatherAdvice: "聖誕節 @ 富士五湖。氣溫 0-9°C。注意保暖。", spots: [] },
-                    { weatherAdvice: "移動回東京。車程較長，注意塞車。", spots: [] },
-                    { weatherAdvice: "東京市區逛街。氣溫 10°C。", spots: [] },
-                    { weatherAdvice: "回程日。預留時間前往機場。", spots: [] }
+                    // Day 2: 12/22
+                    {
+                        weatherAdvice: "迪士尼全日。海風強勁，必備圍巾、暖暖包。氣溫 8°C。",
+                        spots: [
+                            { id: 201, time: '06:30', type: 'hotel', typeLabel: '寄放', name: '玩具總動員飯店', desc: '搭接駁車去舞濱站，轉單軌去飯店寄行李。', transit: '單軌電車', tags: ['寄行李'], img: 'https://media2.tokyodisneyresort.jp/home/hotel/tsh/top/images/slide01_sp.jpg' },
+                            { id: 202, time: '08:30', type: 'play', typeLabel: '樂園', name: '東京迪士尼樂園 (Land)', desc: '入園衝刺！必抽：美女與野獸 DPA、杯麵。', tags: ['DPA', '遊行'], mustEat: true, photoTip: '城堡倒影', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Cinderella_Castle_2014.jpg/640px-Cinderella_Castle_2014.jpg' },
+                            { id: 203, time: '15:00', type: 'hotel', typeLabel: '住宿', name: '玩具總動員飯店 Check-in', desc: '入住安迪的房間。晚餐：飯店便利商店或園區解決。', tags: ['安迪房間'], photoTip: '中庭玩具朋友廣場', img: 'icon.png' }
+                        ]
+                    },
+                    // Day 3: 12/23
+                    {
+                        weatherAdvice: "迪士尼海洋。Fantasy Springs 需提早排隊。氣溫 8°C。",
+                        spots: [
+                            { id: 301, time: '07:00', type: 'play', typeLabel: '樂園', name: '東京迪士尼海洋 (Sea)', desc: '目標：Fantasy Springs (冰雪奇緣/彼得潘/魔髮奇緣)。', tags: ['達菲', '夜間秀'], mustBuy: true, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Tokyo_DisneySea_Aquasphere_2015.jpg/640px-Tokyo_DisneySea_Aquasphere_2015.jpg' },
+                            { id: 302, time: '19:00', type: 'food', typeLabel: '晚餐', name: 'IKSPIARI 伊克斯皮兒莉', desc: '離開園區後在此用餐 (燒肉/壽司)。', tags: ['美食街'], img: 'icon.png' },
+                            { id: 303, time: '21:00', type: 'hotel', typeLabel: '住宿', name: '星野 1955 Tokyo Bay', desc: '搭接駁車回飯店休息。', tags: ['Shuttle Bus'], img: 'https://www.hoshinoresorts.com/hoshinoresorts_wp/wp-content/uploads/2024/01/5e5480746e55c65b6f0e97669d04085f.jpg' }
+                        ]
+                    },
+                    // Day 4: 12/24
+                    {
+                        weatherAdvice: "移動至富士山。山區氣溫低至 2°C，可能積雪。",
+                        spots: [
+                            { id: 401, time: '10:00', type: 'trans', typeLabel: '租車', name: 'Toyota Rent a Car (浦安)', desc: '取車手續。檢查雪胎、ETC卡。', transit: '2 hr 開車', tags: ['ETC', '雪胎'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Toyota_Rent_a_Car_Hatanodai.jpg/640px-Toyota_Rent_a_Car_Hatanodai.jpg' },
+                            { id: 402, time: '13:00', type: 'play', typeLabel: '活動', name: '富士天滑雪度假村', desc: '玩雪盆、堆雪人 (門票+雪具)。背景是富士山！', parking: '¥1000', tags: ['滑雪'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Mount_Fuji_from_Fujiten_Snow_Resort.jpg/640px-Mount_Fuji_from_Fujiten_Snow_Resort.jpg' },
+                            { id: 403, time: '18:00', type: 'food', typeLabel: '晚餐', name: '燒肉 鹿兒島 (Yakiniku)', desc: '預約席。享受黑毛和牛。', parking: '附設', tags: ['和牛'], mustEat: true, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Yakiniku_roaster.jpg/640px-Yakiniku_roaster.jpg' },
+                            { id: 404, time: '20:00', type: 'hotel', typeLabel: '住宿', name: 'Rental Villa Ooishiso', desc: '大石莊。傳統日式民宿 (榻榻米)。', parking: '免費', img: 'icon.png' }
+                        ]
+                    },
+                    // Day 5: 12/25
+                    {
+                        weatherAdvice: "聖誕節 @ 富士五湖。氣溫 0-9°C。注意保暖。",
+                        spots: [
+                            { id: 501, time: '08:00', type: 'spot', typeLabel: '景點', name: '大石公園', desc: '晨間散步。拍攝逆富士絕佳點。', parking: '免費', tags: ['散步'], photoTip: '蘆葦草+富士山', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Lake_Kawaguchiko_Oishi_Park_Kochia_Scoparia_2014.jpg/640px-Lake_Kawaguchiko_Oishi_Park_Kochia_Scoparia_2014.jpg' },
+                            { id: 502, time: '11:00', type: 'play', typeLabel: '活動', name: '山中湖 KABA 巴士', desc: '水陸兩用巴士 (需預約)。', parking: '免費', tags: ['河馬巴士'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Yamanakako_KABA_20120527.jpg/640px-Yamanakako_KABA_20120527.jpg' },
+                            { id: 503, time: '12:30', type: 'food', typeLabel: '午餐', name: 'Houtou Fudou (不動茶屋)', desc: '必吃富士山名物：餺飥麵。', tags: ['鄉土料理'], mustEat: true, img: 'icon.png' },
+                            { id: 504, time: '14:30', type: 'spot', typeLabel: '景點', name: '富士山全景纜車', desc: '天上山公園。吃狸貓糰子、敲鐘。', parking: '縣營', tags: ['纜車'], photoTip: '天上的鐘', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Mt.Kachi_Kachi_Ropeway_02.jpg/640px-Mt.Kachi_Kachi_Ropeway_02.jpg' }
+                        ]
+                    },
+                    // Day 6: 12/26
+                    {
+                        weatherAdvice: "移動回東京。車程較長，注意塞車。",
+                        spots: [
+                            { id: 601, time: '09:30', type: 'play', typeLabel: '活動', name: '富士野生動物園', desc: 'Fuji Safari Park。搭叢林巴士餵獅子。', parking: '免費', tags: ['親子'], photoTip: '獅子餵食', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Fuji_Safari_Park_Lion_Bus.jpg/640px-Fuji_Safari_Park_Lion_Bus.jpg' },
+                            { id: 602, time: '16:00', type: 'trans', typeLabel: '還車', name: 'Toyota 吾妻橋店', desc: '地址：墨田区吾妻橋3-8-2。記得加滿油再還車。', gas: 'Full', transit: '2.5 hr', tags: ['還車'], img: 'https://cdn-icons-png.flaticon.com/512/3202/3202926.png' },
+                            { id: 603, time: '17:00', type: 'hotel', typeLabel: '住宿', name: 'Asakusa New City Hotel', desc: 'Check-in 後在淺草周邊晚餐、散步。', tags: ['淺草'], img: 'https://cf.bstatic.com/xdata/images/hotel/max1024x768/338274945.jpg?k=2f24168c07d39113658510825319808605511e4c700342683072703875323531&o=' }
+                        ]
+                    },
+                    // Day 7: 12/27
+                    {
+                        weatherAdvice: "東京市區逛街。氣溫 10°C。",
+                        spots: [
+                            { id: 701, time: '11:00', type: 'shop', typeLabel: '購物', name: 'BEAMS JAPAN 新宿', desc: 'B1-5F 日本選物。', transit: '地鐵', tags: ['潮牌'], mustBuy: true, img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Shinjuku_Station_South_Exit_20191124.jpg/640px-Shinjuku_Station_South_Exit_20191124.jpg' },
+                            { id: 702, time: '14:00', type: 'spot', typeLabel: '景點', name: '池袋太陽城水族館', desc: '天空企鵝。Sunshine City 逛街。', tags: ['親子'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Sunshine_Aquarium_02.jpg/640px-Sunshine_Aquarium_02.jpg' },
+                            { id: 703, time: '18:00', type: 'spot', typeLabel: '活動', name: '東京車站 燈光秀', desc: '丸之內口。晚餐：拉麵街。', tags: ['夜景'], photoTip: '站前廣場', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Tokyo_Station_Marunouchi_Building_at_night_1.jpg/640px-Tokyo_Station_Marunouchi_Building_at_night_1.jpg' }
+                        ]
+                    },
+                    // Day 8: 12/28
+                    {
+                        weatherAdvice: "回程日。預留時間前往機場。",
+                        spots: [
+                            { id: 801, time: '09:00', type: 'play', typeLabel: '體驗', name: '淺草花屋敷 / 和服體驗', desc: '日本最古老遊樂園。和服拍照。', tags: ['懷舊'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Asakusa_Hanayashiki_Amusement_Park_2012.jpg/640px-Asakusa_Hanayashiki_Amusement_Park_2012.jpg' },
+                            { id: 802, time: '10:00', type: 'trans', typeLabel: '交通', name: '前往成田機場', desc: '搭乘 Access 特快 / Skyliner 直達機場。', transit: '60 min', tags: ['Skyliner'], img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Keisei_AE_series_2010-07.jpg/640px-Keisei_AE_series_2010-07.jpg' },
+                            { id: 803, time: '11:45', type: 'trans', typeLabel: '航班', name: '酷航 TR899 (NRT -> TPE)', desc: '11:45 NRT 起飛 -> 14:55 TPE 抵達', tags: ['回家'], img: 'https://cdn-icons-png.flaticon.com/512/723/723955.png' }
+                        ]
+                    }
                 ],
                 
                 get currentDayData() { return this.itineraryData[this.selectedDayIdx]; },
