@@ -58,15 +58,14 @@
     </script>
 
     <style>
+        /* 增加底部邊距，避免被導覽列擋住 */
         body { 
             -webkit-font-smoothing: antialiased; 
-            /* 避開底部 Home Bar */
-            padding-bottom: calc(80px + env(safe-area-inset-bottom)); 
+            padding-bottom: 120px; 
             background-color: #F4F6F8;
         }
         .dark body { background-color: #1a1b1e; }
 
-        /* 頂部劉海適配 */
         .safe-top { padding-top: env(safe-area-inset-top); }
         .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 
@@ -110,19 +109,19 @@
                 <span class="text-xs">點擊上傳封面</span>
             </div>
             
-            <div class="absolute top-0 right-0 p-4 safe-top z-10 flex gap-2 w-full justify-end bg-gradient-to-b from-black/50 to-transparent">
-                <button @click="toggleCurrency()" class="bg-black/30 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-xs font-bold hover:bg-fuji transition border border-white/20">
+            <div class="absolute top-0 right-0 p-4 safe-top z-30 flex gap-2 w-full justify-end bg-gradient-to-b from-black/60 to-transparent">
+                <button @click="toggleCurrency()" class="bg-black/40 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-xs font-bold hover:bg-fuji transition border border-white/20 shadow-lg">
                     <span x-text="currency"></span>
                 </button>
-                <button @click="toggleDarkMode()" class="bg-black/30 backdrop-blur-md text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-yellow-500 hover:text-white transition border border-white/20">
+                <button @click="toggleDarkMode()" class="bg-black/40 backdrop-blur-md text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-yellow-500 hover:text-white transition border border-white/20 shadow-lg">
                     <i class="fas" :class="isDarkMode ? 'fa-sun' : 'fa-moon'"></i>
                 </button>
-                <button @click="shareApp()" class="bg-black/30 backdrop-blur-md text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-blue-500 hover:text-white transition border border-white/20">
+                <button @click="shareApp()" class="bg-black/40 backdrop-blur-md text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-blue-500 hover:text-white transition border border-white/20 shadow-lg">
                     <i class="fas fa-share-square"></i>
                 </button>
             </div>
 
-            <label class="absolute bottom-3 right-3 bg-black/50 text-white px-3 py-1.5 rounded-full text-xs backdrop-blur-sm cursor-pointer hover:bg-black/70 transition flex items-center gap-2">
+            <label class="absolute bottom-3 right-3 z-20 bg-black/50 text-white px-3 py-1.5 rounded-full text-xs backdrop-blur-sm cursor-pointer hover:bg-black/70 transition flex items-center gap-2 border border-white/10">
                 <i class="fas fa-camera"></i>
                 <span>更換封面</span>
                 <input type="file" accept="image/*" class="hidden" @change="handleBannerUpload">
@@ -419,26 +418,25 @@
         </div>
     </main>
 
-    <nav class="fixed bottom-6 left-4 right-4 h-16 bg-white/95 dark:bg-darkCard/95 backdrop-blur-xl rounded-full shadow-2xl flex justify-around items-center z-40 border border-white/50 dark:border-gray-700 transition-colors safe-bottom">
-        <button @click="currentTab = 'itinerary'" :class="{'text-fuji dark:text-blue-300 scale-110': currentTab === 'itinerary', 'text-gray-400 dark:text-gray-500': currentTab !== 'itinerary'}" class="flex flex-col items-center transition-all duration-300 w-16">
-            <i class="fas fa-map-marked-alt text-xl mb-1"></i>
-            <span class="text-[9px] font-bold">行程</span>
-        </button>
-        <div class="w-[1px] h-6 bg-gray-200 dark:bg-gray-700"></div>
-        <button @click="currentTab = 'wallet'" :class="{'text-fuji dark:text-blue-300 scale-110': currentTab === 'wallet', 'text-gray-400 dark:text-gray-500': currentTab !== 'wallet'}" class="flex flex-col items-center transition-all duration-300 w-16">
-            <i class="fas fa-wallet text-xl mb-1"></i>
-            <span class="text-[9px] font-bold">錢包</span>
-        </button>
-        <div class="w-[1px] h-6 bg-gray-200 dark:bg-gray-700"></div>
-        <button @click="currentTab = 'guide'" :class="{'text-fuji dark:text-blue-300 scale-110': currentTab === 'guide', 'text-gray-400 dark:text-gray-500': currentTab !== 'guide'}" class="flex flex-col items-center transition-all duration-300 w-16">
-            <i class="fas fa-book-open text-xl mb-1"></i>
-            <span class="text-[9px] font-bold">指南</span>
-        </button>
-        <div class="w-[1px] h-6 bg-gray-200 dark:bg-gray-700"></div>
-        <button @click="currentTab = 'weather'" :class="{'text-fuji dark:text-blue-300 scale-110': currentTab === 'weather', 'text-gray-400 dark:text-gray-500': currentTab !== 'weather'}" class="flex flex-col items-center transition-all duration-300 w-16">
-            <i class="fas fa-cloud-sun text-xl mb-1"></i>
-            <span class="text-[9px] font-bold">天氣</span>
-        </button>
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-darkCard/95 backdrop-blur-xl border-t border-gray-200 dark:border-gray-700 transition-colors z-40 safe-bottom">
+        <div class="grid grid-cols-4 items-center h-16 max-w-md mx-auto">
+            <button @click="currentTab = 'itinerary'" :class="{'text-fuji dark:text-blue-300': currentTab === 'itinerary', 'text-gray-400 dark:text-gray-500': currentTab !== 'itinerary'}" class="flex flex-col items-center justify-center transition-all duration-300 h-full active:scale-95">
+                <i class="fas fa-map-marked-alt text-xl mb-1"></i>
+                <span class="text-[9px] font-bold">行程</span>
+            </button>
+            <button @click="currentTab = 'wallet'" :class="{'text-fuji dark:text-blue-300': currentTab === 'wallet', 'text-gray-400 dark:text-gray-500': currentTab !== 'wallet'}" class="flex flex-col items-center justify-center transition-all duration-300 h-full active:scale-95">
+                <i class="fas fa-wallet text-xl mb-1"></i>
+                <span class="text-[9px] font-bold">錢包</span>
+            </button>
+            <button @click="currentTab = 'guide'" :class="{'text-fuji dark:text-blue-300': currentTab === 'guide', 'text-gray-400 dark:text-gray-500': currentTab !== 'guide'}" class="flex flex-col items-center justify-center transition-all duration-300 h-full active:scale-95">
+                <i class="fas fa-book-open text-xl mb-1"></i>
+                <span class="text-[9px] font-bold">指南</span>
+            </button>
+            <button @click="currentTab = 'weather'" :class="{'text-fuji dark:text-blue-300': currentTab === 'weather', 'text-gray-400 dark:text-gray-500': currentTab !== 'weather'}" class="flex flex-col items-center justify-center transition-all duration-300 h-full active:scale-95">
+                <i class="fas fa-cloud-sun text-xl mb-1"></i>
+                <span class="text-[9px] font-bold">天氣</span>
+            </button>
+        </div>
     </nav>
 
     <div x-show="showSpotModal" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center px-4">
@@ -518,7 +516,7 @@
                 selectedDayIdx: 0,
                 isDarkMode: false,
                 currency: 'JPY',
-                bannerImage: localStorage.getItem('trip_banner') || 'hero.jpg', 
+                bannerImage: localStorage.getItem('trip_banner') || '', 
                 appInfo: localStorage.getItem('trip_info') || '版本 1.0 | 點擊此處編輯說明與注意事項...',
                 sortableInstance: null,
 
@@ -537,7 +535,6 @@
                 toggleDarkMode() { this.isDarkMode = !this.isDarkMode; },
                 toggleCurrency() { this.currency = this.currency === 'JPY' ? 'TWD' : 'JPY'; },
                 
-                // 🍎 iOS Share Sheet (取代直接跳轉)
                 shareApp() {
                     if (navigator.share) {
                         navigator.share({
@@ -565,7 +562,7 @@
                 walletData: {
                     initialCash: 245000,
                     rate: 0.22,
-                    transactions: [] // 手動記帳
+                    transactions: [] 
                 },
                 calc: { display: '', equation: '', category: '餐飲', desc: '' },
                 calcButtons: ['7','8','9','/','4','5','6','*','1','2','3','-','C','0','=','+','Save'],
@@ -640,7 +637,7 @@
 
                 // 📝 備忘錄 (Accordion)
                 memoBlocks: [
-                    { title: '必備證件', isOpen: true, newItemText: '', items: [{ type: 'todo', text: '護照 (有效期6個月以上)', checked: false }, { type: 'todo', text: '駕照+日文譯本', checked: false }, { type: 'todo', text: '機票憑證', checked: false }] },
+                    { title: '必備證件', isOpen: true, newItemText: '', items: [{ type: 'todo', text: '護照', checked: false }, { type: 'todo', text: '駕照+日文譯本', checked: false }, { type: 'todo', text: '機票憑證', checked: false }] },
                     { title: '電子 & 網路', isOpen: false, newItemText: '', items: [{ type: 'todo', text: '行動電源', checked: false }, { type: 'todo', text: 'Esim / 漫遊開通', checked: false }] },
                     { title: '生活用品', isOpen: false, newItemText: '', items: [{ type: 'todo', text: '牙刷牙膏', checked: false }, { type: 'todo', text: '常備藥', checked: false }] }
                 ],
@@ -769,13 +766,12 @@
                 
                 changeDay(index) { 
                     this.selectedDayIdx = index; 
-                    // 關鍵修正：確保切換日期時，拖拉控制器正確重啟
                     this.$nextTick(() => { 
                         if (this.sortableInstance) {
-                            this.sortableInstance.destroy(); // 銷毀舊的
+                            this.sortableInstance.destroy(); 
                             this.sortableInstance = null;
                         }
-                        this.initSortable(); // 建立新的
+                        this.initSortable(); 
                     }); 
                 },
                 
@@ -798,7 +794,6 @@
                             animation: 150,
                             ghostClass: 'sortable-ghost',
                             onEnd: (evt) => {
-                                // 修正：拖拉後更新原始資料陣列，確保順序被儲存
                                 const item = this.currentDayData.spots.splice(evt.oldIndex, 1)[0];
                                 this.currentDayData.spots.splice(evt.newIndex, 0, item);
                             }
