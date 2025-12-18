@@ -109,7 +109,7 @@
                 <span class="text-xs">點擊上傳封面</span>
             </div>
             
-            <div class="absolute top-0 right-0 p-4 safe-top z-30 flex gap-2 w-full justify-end bg-gradient-to-b from-black/60 to-transparent">
+            <div class="absolute top-6 right-4 safe-top z-30 flex gap-2">
                 <button @click="toggleCurrency()" class="bg-black/40 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-xs font-bold hover:bg-fuji transition border border-white/20 shadow-lg">
                     <span x-text="currency"></span>
                 </button>
@@ -516,7 +516,7 @@
                 selectedDayIdx: 0,
                 isDarkMode: false,
                 currency: 'JPY',
-                bannerImage: localStorage.getItem('trip_banner') || '', 
+                bannerImage: localStorage.getItem('trip_banner') || 'hero.jpg', 
                 appInfo: localStorage.getItem('trip_info') || '版本 1.0 | 點擊此處編輯說明與注意事項...',
                 sortableInstance: null,
 
@@ -637,7 +637,7 @@
 
                 // 📝 備忘錄 (Accordion)
                 memoBlocks: [
-                    { title: '必備證件', isOpen: true, newItemText: '', items: [{ type: 'todo', text: '護照', checked: false }, { type: 'todo', text: '駕照+日文譯本', checked: false }, { type: 'todo', text: '機票憑證', checked: false }] },
+                    { title: '必備證件', isOpen: true, newItemText: '', items: [{ type: 'todo', text: '護照 (有效期6個月以上)', checked: false }, { type: 'todo', text: '駕照+日文譯本', checked: false }, { type: 'todo', text: '機票憑證', checked: false }] },
                     { title: '電子 & 網路', isOpen: false, newItemText: '', items: [{ type: 'todo', text: '行動電源', checked: false }, { type: 'todo', text: 'Esim / 漫遊開通', checked: false }] },
                     { title: '生活用品', isOpen: false, newItemText: '', items: [{ type: 'todo', text: '牙刷牙膏', checked: false }, { type: 'todo', text: '常備藥', checked: false }] }
                 ],
