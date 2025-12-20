@@ -408,6 +408,50 @@
                 sortableInstance: null, mapInstance: null, mapMarkers: [], mapSelectedSpot: null,
                 realTimeWeather: { temp: null, desc: '', feelsLike: null, loading: false, error: null }, rateLoading: false,
 
+                // 核心邏輯補丁 (Fixed Logic)
+                get currentDayData() { 
+                    return this.itineraryData[this.selectedDayIdx] || { spots: [], region: '未知', weatherAdvice: '' }; 
+                },
+                changeDay(index) { 
+                    this.selectedDayIdx = index; 
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    if(this.viewMode === 'map') this.initMap();
+                },
+                getImage(spot) {
+                    return spot.img ? spot.img : 'icon.png';
+                },
+                getSpotClass(type) {
+                    const map = { 'spot': 'bg-tagSpot', 'food': 'bg-tagFood', 'shop': 'bg-tagShop', 'hotel': 'bg-tagHotel', 'trans': 'bg-tagTrans', 'play': 'bg-tagPlay' };
+                    return map[type] || 'bg-gray-400';
+                },
+                getSpotIcon(type) {
+                    const map = { 'spot': 'fa-camera', 'food': 'fa-utensils', 'shop': 'fa-shopping-bag', 'hotel': 'fa-bed', 'trans': 'fa-plane', 'play': 'fa-ticket-alt' };
+                    return map[type] || 'fa-map-marker-alt';
+                },
+                getTemp(idx) {
+                    return { min: 2, max: 9 }; // 範例氣溫
+                },
+                getWeatherIcon(idx) {
+                    return 'fa-sun'; // 範例天氣圖示
+                },
+                removeSpot(index) {
+                     if(confirm('確定刪除此行程？')) {
+                        this.currentDayData.spots.splice(index, 1);
+                     }
+                },
+                initSortable() {
+                    const el = document.getElementById('itinerary-list');
+                    if (!el) return;
+                    if (this.sortableInstance) this.sortableInstance.destroy();
+                    this.sortableInstance = new Sortable(el, {
+                        handle: '.drag-handle', animation: 150,
+                        onEnd: (evt) => {
+                            const item = this.currentDayData.spots.splice(evt.oldIndex, 1)[0];
+                            this.currentDayData.spots.splice(evt.newIndex, 0, item);
+                        }
+                    });
+                },
+
                 // Core
                 handleBannerUpload(e) { const f = e.target.files[0]; if(f){ const r=new FileReader(); r.onload=(ev)=>{this.bannerImage=ev.target.result;localStorage.setItem('trip_banner',this.bannerImage)};r.readAsDataURL(f);}},
                 saveAppInfo() { localStorage.setItem('trip_info', this.appInfo); },
@@ -421,12 +465,13 @@
                 shareApp() { if(navigator.share){navigator.share({title:'東京富士旅',url:window.location.href})}else{alert('請手動複製連結');} },
                 
                 // Swap
-                showSwapModal: false, openSwapModal() { this.showSwapModal = true; },
+                showDaySortModal: false, 
+                openDaySortModal() { this.showDaySortModal = true; },
                 swapDayWith(targetIdx) {
                     const temp = this.itineraryData[this.selectedDayIdx];
                     this.itineraryData[this.selectedDayIdx] = this.itineraryData[targetIdx];
                     this.itineraryData[targetIdx] = temp;
-                    this.showSwapModal = false;
+                    this.showDaySortModal = false;
                     alert('行程已調動！');
                     this.$nextTick(() => { if(this.viewMode==='map') this.initMap(); else this.initSortable(); });
                 },
@@ -435,7 +480,6 @@
                 budgetCategories: ['交通', '娛樂', '餐飲', '樂園', '飯店', '服飾', '玩具', '其他'],
                 walletData: { initialCash: 245000, rate: 0.22, transactions: [] },
                 calc: { display: '', equation: '', category: '餐飲', desc: '' },
-                calcButtons: ['C','back','%','/','7','8','9','*','4','5','6','-','1','2','3','+','0','.','=','Save'],
                 
                 handleCalc(btn) {
                     if(btn==='C'){this.calc.display='';this.calc.equation=''}
@@ -469,7 +513,6 @@
                 getBudgetBorderColor(c){const m={'交通':'border-blue-500','餐飲':'border-orange-500'};return m[c]||'border-gray-400'},
                 getBudgetColor(c){const m={'交通':'bg-blue-500','餐飲':'bg-orange-500'};return m[c]||'bg-gray-400'},
                 removeTransaction(i){if(confirm('刪除？'))this.walletData.transactions.splice(i,1)},
-                isOperator(btn){return ['+','-','*','/','C','=','%'].includes(btn)},
 
                 // Explore
                 async fetchRealTimeWeather(){
@@ -498,8 +541,7 @@
                     window.open(url, '_blank');
                 },
                 guideSearchQuery: '',
-                rainyPlans: [{name:'池袋太陽城',desc:'水族館與展望台'},{name:'TeamLab',desc:'豐洲光影藝術'},{name:'Aeon Mall',desc:'幕張新都心'}],
-
+                
                 // Map & Nav
                 getMapLink(spot) { return spot.locationType==='manual'?spot.location:`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.name)}`; },
                 navigateBetween(start, end) { 
@@ -543,30 +585,21 @@
                         });
                     } else { alert("無法取得定位"); }
                 },
-
-                // Auto Calc Distance (Haversine)
                 calculateDistanceTime(spot, nextSpot) {
                     if (spot.transitTime && !spot.transitTime.includes('auto') && spot.transitTime !== '設定') return spot.transitTime;
-                    
                     if (!spot.lat || !spot.lng || !nextSpot.lat || !nextSpot.lng) return '設定';
-
-                    const R = 6371; // km
+                    const R = 6371; 
                     const dLat = (nextSpot.lat - spot.lat) * Math.PI / 180;
                     const dLon = (nextSpot.lng - spot.lng) * Math.PI / 180;
-                    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                              Math.cos(spot.lat * Math.PI / 180) * Math.cos(nextSpot.lat * Math.PI / 180) *
-                              Math.sin(dLon/2) * Math.sin(dLon/2);
+                    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(spot.lat * Math.PI / 180) * Math.cos(nextSpot.lat * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
                     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
                     const dist = R * c; 
-
-                    let speed = 60; // default train
+                    let speed = 60; 
                     if (spot.transitType === 'walk') speed = 5;
                     if (spot.transitType === 'car') speed = 40;
-
                     let mins = Math.round((dist / speed) * 60);
-                    if (spot.transitType !== 'walk') mins += 15; // Buffer
+                    if (spot.transitType !== 'walk') mins += 15;
                     if (mins < 5) mins = 5;
-
                     const display = mins > 60 ? `${Math.floor(mins/60)}h ${mins%60}m` : `${mins}m`;
                     spot.transitTime = display; 
                     return display;
