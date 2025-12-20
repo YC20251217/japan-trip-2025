@@ -6,6 +6,7 @@
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="東京富士旅">
@@ -53,35 +54,42 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .drag-handle { cursor: grab; touch-action: none; }
-        .banner-placeholder { background-image: url("data:image/svg+xml,%3Csvg..."); }
         [x-cloak] { display: none !important; }
         
-        /* Map & Route Styles */
+        /* Map Styles */
         #map-container { height: calc(100vh - 280px); width: 100%; border-radius: 16px; z-index: 1; }
         .custom-marker { background-color: #2C5F8A; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
         
-        .route-line-wrapper {
-            position: absolute; left: 20px; top: 70px; height: 40px; width: 2px;
-            background-color: #cbd5e1; z-index: 0; display: flex; align-items: center; justify-content: center;
+        /* Route Connector Styles (List View) */
+        .connector-line {
+            width: 2px;
+            height: 40px; /* 固定高度，確保看得到 */
+            background-color: #cbd5e1;
+            margin: 0 auto;
         }
-        .dark .route-line-wrapper { background-color: #4b5563; }
+        .dark .connector-line { background-color: #4b5563; }
         
-        .transit-badge {
-            background-color: white; border: 1px solid #e2e8f0; border-radius: 12px;
-            padding: 2px 8px; font-size: 10px; color: #64748b; display: flex; align-items: center; gap: 4px;
-            cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); white-space: nowrap; z-index: 10;
+        .transit-pill {
+            background-color: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 9999px;
+            padding: 4px 12px;
+            font-size: 11px;
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            font-weight: bold;
+            cursor: pointer;
         }
-        .dark .transit-badge { background-color: #1f2937; border-color: #374151; color: #9ca3af; }
-        
-        .pie-chart { width: 120px; height: 120px; border-radius: 50%; position: relative; }
-        .pie-chart::after { content: ""; position: absolute; inset: 30px; background: #fff; border-radius: 50%; }
-        .dark .pie-chart::after { background: #25262b; }
+        .dark .transit-pill { background-color: #1f2937; border-color: #374151; color: #9ca3af; }
     </style>
 </head>
 <body x-data="travelApp()" :class="{'dark': isDarkMode}" class="bg-warm text-gray-800 dark:bg-darkBg dark:text-darkText transition-colors duration-300">
 
     <div class="bg-white dark:bg-darkCard pb-2 relative transition-colors duration-300">
-        <div class="relative w-full h-64 bg-gray-200 dark:bg-gray-700 banner-placeholder overflow-hidden group">
+        <div class="relative w-full h-64 bg-gray-200 dark:bg-gray-700 overflow-hidden group">
             <img :src="bannerImage" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105" x-show="bannerImage">
             <div x-show="!bannerImage" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 pt-10">
                 <i class="fas fa-image text-3xl mb-2"></i><span class="text-xs">點擊上傳封面</span>
@@ -117,7 +125,17 @@
                     </div>
                 </template>
             </div>
-            <button @click="openSwapModal()" class="p-3 text-gray-400 hover:text-fuji transition"><i class="fas fa-exchange-alt"></i></button>
+            
+            <div class="flex items-center gap-1 border-l border-gray-200 dark:border-gray-700 pl-2 ml-1">
+                <button @click="toggleViewMode()" :class="viewMode==='map'?'text-fuji':'text-gray-400'" class="p-2 hover:text-fuji transition flex flex-col items-center" title="地圖模式">
+                    <i class="fas" :class="viewMode==='map'?'fa-map':'fa-map-marked'"></i>
+                    <span class="text-[9px] font-bold">地圖</span>
+                </button>
+                <button @click="openSwapModal()" class="p-2 text-gray-400 hover:text-fuji transition flex flex-col items-center" title="調動行程">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span class="text-[9px] font-bold">調動</span>
+                </button>
+            </div>
         </div>
         <div x-show="currentTab !== 'itinerary'" class="py-4 px-5 text-center font-bold text-fuji dark:text-blue-300"><span x-text="getTabTitle()"></span></div>
     </div>
@@ -125,44 +143,103 @@
     <main class="pt-4 px-4 min-h-screen">
 
         <div x-show="currentTab === 'itinerary'" x-transition.opacity>
-            <div class="mb-6 bg-gradient-to-r from-blue-50 to-white dark:from-gray-800 dark:to-gray-700 p-4 rounded-2xl border border-blue-100 dark:border-gray-600 flex items-start gap-4 shadow-sm cursor-pointer hover:shadow-md transition" @click="openLocationWeather(currentDayData.region)">
+            
+            <div x-show="viewMode === 'list'" class="mb-6 bg-gradient-to-r from-blue-50 to-white dark:from-gray-800 dark:to-gray-700 p-4 rounded-2xl border border-blue-100 dark:border-gray-600 flex items-start gap-4 shadow-sm cursor-pointer" @click="openLocationWeather(currentDayData.region)">
                 <div class="text-3xl text-fuji dark:text-blue-300 mt-1"><i :class="getWeatherIcon(selectedDayIdx)"></i></div>
                 <div>
                     <h3 class="font-bold text-fuji dark:text-blue-300 text-sm mb-1 flex items-center gap-2">
                         <span x-text="currentDayData.region + ' 預測天氣'"></span>
-                        <span class="text-[10px] bg-white dark:bg-gray-600 border border-blue-200 dark:border-gray-500 text-blue-400 dark:text-blue-200 px-2 rounded-full flex items-center gap-1"><i class="fas fa-search text-[8px]"></i> 查詢</span>
+                        <span class="text-[10px] bg-white dark:bg-gray-600 text-blue-400 px-2 rounded-full flex items-center gap-1"><i class="fas fa-search text-[8px]"></i> 查詢</span>
                     </h3>
                     <p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
                         <span x-text="currentDayData.weatherAdvice"></span>
-                        <span class="text-[10px] text-gray-400 mt-1 block">歷史均溫: <span x-text="getTemp(selectedDayIdx).min"></span>°~<span x-text="getTemp(selectedDayIdx).max"></span>° | 降雪機率: <span x-text="getSnowProb(selectedDayIdx)"></span>%</span>
+                        <span class="text-[10px] text-gray-400 mt-1 block">歷史均溫: <span x-text="getTemp(selectedDayIdx).min"></span>°~<span x-text="getTemp(selectedDayIdx).max"></span>° | 降雪: <span x-text="getSnowProb(selectedDayIdx)"></span>%</span>
                     </p>
                 </div>
             </div>
 
-            <div x-show="viewMode === 'list'" id="itinerary-list" class="space-y-4 pb-20">
+            <div x-show="viewMode === 'list'" id="itinerary-list" class="space-y-0 pb-20">
                 <template x-for="(spot, index) in currentDayData.spots" :key="spot.id">
-                    <div class="relative group">
-                        <div x-show="index < currentDayData.spots.length - 1" class="absolute left-[26px] top-full h-8 w-0.5 bg-gray-300 dark:bg-gray-600 z-0 flex items-center justify-center" style="height: 40px;">
-                            <div class="transit-badge z-10" @click="editTransit(spot, currentDayData.spots[index+1])">
-                                <i :class="getTransitIcon(spot.transitType)"></i><span x-text="spot.transitTime || '設定'"></span>
-                            </div>
-                            <button @click="navigateBetween(spot, currentDayData.spots[index+1])" class="absolute left-14 bg-gray-100 dark:bg-gray-700 text-fuji text-[10px] px-2 py-1 rounded-full shadow-sm hover:bg-gray-200 flex items-center gap-1 w-max"><i class="fas fa-directions"></i> 路線</button>
-                        </div>
-                        <div :data-id="spot.id" class="bg-white dark:bg-darkCard rounded-2xl p-4 card-shadow relative z-10 border border-transparent dark:border-gray-700 transition-colors">
+                    <div class="flex flex-col items-center">
+                        
+                        <div :data-id="spot.id" class="w-full bg-white dark:bg-darkCard rounded-2xl p-4 card-shadow relative z-10 border border-transparent dark:border-gray-700 transition-colors group">
                             <div class="flex justify-between items-center mb-2 border-b border-gray-100 dark:border-gray-700 pb-2">
-                                <div class="flex items-center gap-2"><span class="text-sm font-bold text-fuji dark:text-blue-300 font-mono" x-text="spot.time || '--:--'"></span><span :class="getSpotClass(spot.type)" class="text-[10px] px-2 py-0.5 rounded text-white font-bold flex items-center gap-1"><i :class="getSpotIcon(spot.type)"></i><span x-text="spot.typeLabel"></span></span></div>
-                                <div class="flex items-center gap-1"><div x-show="spot.cost > 0" class="text-xs font-bold text-accent mr-2"><span x-show="spot.includeInBudget" class="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-500 px-1 rounded mr-1"><i class="fas fa-calculator"></i></span><span x-text="formatMoney(spot.cost)"></span></div><button @click="editSpot(spot)" class="text-gray-300 hover:text-fuji px-2"><i class="fas fa-pen text-xs"></i></button><div class="drag-handle text-gray-300 p-1 cursor-move"><i class="fas fa-grip-lines"></i></div></div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-bold text-fuji dark:text-blue-300 font-mono" x-text="spot.time || '--:--'"></span>
+                                    <span :class="getSpotClass(spot.type)" class="text-[10px] px-2 py-0.5 rounded text-white font-bold flex items-center gap-1">
+                                        <i :class="getSpotIcon(spot.type)"></i><span x-text="spot.typeLabel"></span>
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <div x-show="spot.cost > 0" class="text-xs font-bold text-accent mr-2">
+                                        <span x-show="spot.includeInBudget" class="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-500 px-1 rounded mr-1"><i class="fas fa-calculator"></i></span>
+                                        <span x-text="formatMoney(spot.cost)"></span>
+                                    </div>
+                                    <button @click="editSpot(spot)" class="text-gray-300 hover:text-fuji px-2"><i class="fas fa-pen text-xs"></i></button>
+                                    <div class="drag-handle text-gray-300 p-1 cursor-move"><i class="fas fa-grip-lines"></i></div>
+                                </div>
                             </div>
-                            <div class="flex gap-4"><div class="w-14 h-14 bg-gray-100 dark:bg-gray-700 rounded-xl flex-shrink-0 overflow-hidden relative shadow-sm"><img :src="getImage(spot)" class="w-full h-full object-cover" alt="spot"></div><div class="flex-1"><div class="flex items-start justify-between"><input type="text" x-model="spot.name" class="w-full font-bold text-gray-800 dark:text-gray-100 text-base leading-tight bg-transparent border-b border-transparent focus:border-gray-200 dark:focus:border-gray-600 outline-none mb-1"><button @click="openGuideForSpot(spot)" class="text-xs text-gray-400 hover:text-fuji ml-2"><i class="fas fa-info-circle"></i></button></div><div class="mt-1 flex gap-2"><a :href="getMapLink(spot)" target="_blank" class="text-[10px] text-blue-500 dark:text-blue-400 flex items-center gap-1 hover:underline"><i class="fas fa-map-marker-alt"></i> 導航</a></div><textarea x-model="spot.desc" rows="1" class="w-full text-xs text-gray-500 dark:text-gray-400 mt-1 bg-transparent border-none outline-none resize-none p-0" placeholder="備註..."></textarea></div></div>
+                            <div class="flex gap-4">
+                                <div class="w-14 h-14 bg-gray-100 dark:bg-gray-700 rounded-xl flex-shrink-0 overflow-hidden relative shadow-sm">
+                                    <img :src="getImage(spot)" class="w-full h-full object-cover" alt="spot">
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-start justify-between">
+                                        <input type="text" x-model="spot.name" class="w-full font-bold text-gray-800 dark:text-gray-100 text-base leading-tight bg-transparent border-b border-transparent focus:border-gray-200 dark:focus:border-gray-600 outline-none mb-1">
+                                        <button @click="openGuideForSpot(spot)" class="text-xs text-gray-400 hover:text-fuji ml-2"><i class="fas fa-info-circle"></i></button>
+                                    </div>
+                                    <div class="mt-1 flex gap-2">
+                                        <a :href="getMapLink(spot)" target="_blank" class="text-[10px] text-blue-500 dark:text-blue-400 flex items-center gap-1 hover:underline">
+                                            <i class="fas fa-map-marker-alt"></i> 導航
+                                        </a>
+                                    </div>
+                                    <textarea x-model="spot.desc" rows="1" class="w-full text-xs text-gray-500 dark:text-gray-400 mt-1 bg-transparent border-none outline-none resize-none p-0" placeholder="備註..."></textarea>
+                                </div>
+                            </div>
                             <button @click="removeSpot(index)" class="absolute -right-2 -top-2 w-6 h-6 bg-red-100 text-red-500 rounded-full text-xs opacity-0 group-hover:opacity-100 transition shadow-sm flex items-center justify-center"><i class="fas fa-times"></i></button>
                         </div>
-                        <div x-show="index < currentDayData.spots.length - 1" class="h-10"></div>
+
+                        <div x-show="index < currentDayData.spots.length - 1" class="flex flex-col items-center w-full my-1">
+                            <div class="connector-line h-4 w-0.5 bg-gray-300 dark:bg-gray-600"></div>
+                            
+                            <div class="flex items-center gap-2 relative z-10">
+                                <div class="transit-pill" @click="editTransit(spot, currentDayData.spots[index+1])">
+                                    <i :class="getTransitIcon(spot.transitType)"></i>
+                                    <span x-text="spot.transitTime || '設定'"></span>
+                                </div>
+                                <button @click="navigateBetween(spot, currentDayData.spots[index+1])" class="text-[10px] bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-lg hover:bg-gray-300 transition">
+                                    <i class="fas fa-directions"></i> 路線
+                                </button>
+                            </div>
+
+                            <div class="connector-line h-4 w-0.5 bg-gray-300 dark:bg-gray-600"></div>
+                        </div>
+
                     </div>
                 </template>
                 <button @click="openSpotModal()" class="w-full mt-4 py-3 bg-white dark:bg-darkCard border-2 border-dashed border-fuji dark:border-blue-700 text-fuji dark:text-blue-300 rounded-xl font-bold shadow-sm hover:bg-blue-50 dark:hover:bg-gray-800 flex items-center justify-center gap-2"><i class="fas fa-plus-circle"></i> 新增行程景點</button>
             </div>
-            <div x-show="viewMode === 'map'" class="relative h-full w-full"><div id="map-container" class="shadow-inner border border-gray-200 dark:border-gray-700"></div></div>
-            <div class="fixed bottom-24 right-5 z-30"><button @click="toggleViewMode()" class="bg-fuji text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-xl hover:scale-110 transition border-4 border-white dark:border-gray-800"><i class="fas" :class="viewMode === 'list' ? 'fa-map-marked-alt' : 'fa-list-ul'"></i></button></div>
+
+            <div x-show="viewMode === 'map'" class="relative h-full w-full">
+                <div id="map-container" class="shadow-inner border border-gray-200 dark:border-gray-700"></div>
+                <div x-show="mapSelectedSpot" x-transition.move.bottom class="fixed bottom-24 left-4 right-4 bg-white dark:bg-darkCard p-4 rounded-2xl shadow-2xl z-[1000] border border-gray-100 dark:border-gray-600">
+                     <div class="flex gap-4">
+                        <div class="w-16 h-16 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
+                            <img :src="mapSelectedSpot?.img || 'icon.png'" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <h3 class="font-bold text-gray-800 dark:text-white text-lg leading-tight" x-text="mapSelectedSpot?.name"></h3>
+                                <button @click="mapSelectedSpot = null" class="text-gray-400"><i class="fas fa-times"></i></button>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2" x-text="mapSelectedSpot?.desc"></p>
+                            <div class="flex gap-2 mt-2">
+                                <a :href="getMapLink(mapSelectedSpot)" target="_blank" class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-lg font-bold">導航</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="h-24"></div> 
         </div>
 
@@ -177,7 +254,6 @@
                     <div class="text-right"><div class="text-xs text-blue-200">已支出</div><div class="text-lg font-bold opacity-90" x-text="formatMoney(totalSpent)"></div></div>
                 </div>
             </div>
-
             <div class="bg-white dark:bg-darkCard rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden mb-6">
                 <div class="bg-gray-50 dark:bg-gray-800 p-4 text-right border-b border-gray-100 dark:border-gray-700">
                     <div class="text-xs text-gray-400 h-4" x-text="calc.equation"></div>
@@ -204,30 +280,16 @@
                     </template>
                 </div>
             </div>
-
-            <div class="bg-white dark:bg-darkCard rounded-2xl p-5 shadow-sm mb-6 flex items-center justify-between">
-                <div class="pie-chart shadow-inner" :style="pieChartStyle"></div>
-                <div class="flex-1 pl-6 space-y-1">
-                    <h4 class="text-xs font-bold text-gray-400 mb-2">支出分類統計</h4>
-                    <template x-for="cat in sortedCategories" :key="cat.name">
-                        <div class="flex items-center justify-between text-xs" x-show="cat.value > 0">
-                            <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full" :class="getBudgetColor(cat.name)"></div><span class="text-gray-600 dark:text-gray-300" x-text="cat.name"></span></div>
-                            <span class="font-bold text-gray-800 dark:text-gray-100" x-text="Math.round(cat.percent) + '%'"></span>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
             <div class="space-y-3">
                 <h3 class="font-bold text-gray-800 dark:text-white px-2">支出紀錄</h3>
                 <div x-show="itinerarySpent > 0" class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl shadow-sm flex items-center justify-between border-l-4 border-blue-500">
-                    <div><div class="font-bold text-fuji dark:text-blue-300 text-sm">行程預定花費 (自動同步)</div><div class="text-[10px] text-gray-400">包含租車、門票等</div></div>
+                    <div><div class="font-bold text-fuji dark:text-blue-300 text-sm">行程預定花費 (自動同步)</div></div>
                     <div class="text-right"><div class="font-bold text-fuji dark:text-blue-300" x-text="formatMoney(itinerarySpent)"></div></div>
                 </div>
                 <template x-for="(tx, index) in walletData.transactions" :key="index">
                     <div class="bg-white dark:bg-darkCard p-3 rounded-xl shadow-sm flex items-center justify-between border-l-4" :class="getBudgetBorderColor(tx.category)">
-                        <div><div class="font-bold text-gray-800 dark:text-gray-200 text-sm" x-text="tx.desc || '未命名'"></div><div class="text-[10px] text-gray-400" x-text="tx.category + ' | ' + tx.date"></div></div>
-                        <div class="text-right"><div class="font-bold text-fuji dark:text-blue-300" x-text="formatMoney(tx.amount)"></div><button @click="removeTransaction(index)" class="text-gray-300 hover:text-red-400 text-xs mt-1"><i class="fas fa-trash-alt"></i></button></div>
+                        <div><div class="font-bold text-gray-800 dark:text-gray-200 text-sm" x-text="tx.desc"></div><div class="text-[10px] text-gray-400" x-text="tx.category"></div></div>
+                        <div class="text-right"><div class="font-bold text-fuji dark:text-blue-300" x-text="formatMoney(tx.amount)"></div><button @click="removeTransaction(index)" class="text-gray-300 hover:text-red-400 text-xs"><i class="fas fa-trash-alt"></i></button></div>
                     </div>
                 </template>
             </div>
@@ -244,23 +306,23 @@
                     <template x-for="(guide, idx) in guideData" :key="idx">
                         <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl relative group border border-gray-100 dark:border-gray-700">
                             <div class="flex gap-3">
-                                <div x-show="guide.img" class="w-16 h-16 flex-shrink-0 bg-gray-200 rounded-lg overflow-hidden cursor-pointer shadow-sm" @click="openLightbox(guide.img)"><img :src="guide.img" class="w-full h-full object-cover"></div>
-                                <div class="flex-1"><h4 class="font-bold text-fuji dark:text-blue-300 text-sm mb-1" x-text="guide.title"></h4><p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed mb-2" x-text="guide.desc"></p><button @click="addSpotFromGuide(guide)" class="text-[10px] bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-200 px-2 py-1 rounded flex items-center gap-1 w-fit hover:bg-blue-200"><i class="fas fa-plus"></i> 加入行程</button></div>
+                                <div x-show="guide.img" class="w-16 h-16 flex-shrink-0 bg-gray-200 rounded-lg overflow-hidden cursor-pointer" @click="openLightbox(guide.img)"><img :src="guide.img" class="w-full h-full object-cover"></div>
+                                <div class="flex-1"><h4 class="font-bold text-fuji dark:text-blue-300 text-sm mb-1" x-text="guide.title"></h4><p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed mb-2" x-text="guide.desc"></p><button @click="addSpotFromGuide(guide)" class="text-[10px] bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-200 px-2 py-1 rounded"><i class="fas fa-plus"></i> 加入行程</button></div>
                             </div>
                             <div class="absolute top-2 right-2 flex gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition"><button @click="openGuideModal(guide, idx)" class="text-gray-400 hover:text-fuji p-1 bg-white/80 rounded"><i class="fas fa-pen text-xs"></i></button><button @click="removeGuide(idx)" class="text-gray-400 hover:text-red-400 p-1 bg-white/80 rounded"><i class="fas fa-trash text-xs"></i></button></div>
                         </div>
                     </template>
                 </div>
             </div>
-            <div class="space-y-4 mb-6"><template x-for="(block, bIdx) in memoBlocks" :key="bIdx"><div class="bg-yellow-50 dark:bg-yellow-900/10 rounded-2xl shadow-sm border border-yellow-100 dark:border-yellow-900/30 overflow-hidden"><div class="p-4 flex items-center justify-between cursor-pointer hover:bg-yellow-100/50 dark:hover:bg-yellow-900/20 transition" @click="block.isOpen = !block.isOpen"><div class="flex items-center gap-2 flex-1"><i class="fas fa-chevron-right text-yellow-600 text-xs transition-transform duration-200" :class="{'rotate-90': block.isOpen}"></i><input type="text" x-model="block.title" @click.stop class="bg-transparent font-bold text-yellow-800 dark:text-yellow-500 outline-none w-full" placeholder="清單標題..."></div><div class="text-xs text-yellow-600 mr-2" x-show="!block.isOpen"><span x-text="block.items.length"></span> 項</div><button @click.stop="removeMemoBlock(bIdx)" class="text-gray-300 hover:text-red-400"><i class="fas fa-trash-alt text-xs"></i></button></div><div x-show="block.isOpen" x-collapse><div class="px-4 pb-4 space-y-1"><template x-for="(item, iIdx) in block.items" :key="iIdx"><div class="flex items-start gap-2 py-1 group"><template x-if="item.type === 'todo'"><div class="flex items-center w-full"><input type="checkbox" x-model="item.checked" class="mt-1 w-4 h-4 rounded text-fuji focus:ring-fuji border-gray-300 dark:border-gray-600"><input type="text" x-model="item.text" class="flex-1 ml-2 bg-transparent text-sm text-gray-700 dark:text-gray-300 outline-none border-b border-transparent focus:border-yellow-300" :class="{'line-through text-gray-400': item.checked}"></div></template><template x-if="item.type === 'ordered'"><div class="flex items-center w-full"><span class="text-xs font-bold text-fuji dark:text-blue-300 w-5 text-center" x-text="(iIdx + 1) + '.'"></span><input type="text" x-model="item.text" class="flex-1 ml-1 bg-transparent text-sm text-gray-700 dark:text-gray-300 outline-none border-b border-transparent focus:border-yellow-300"></div></template><template x-if="item.type === 'text'"><div class="flex items-start w-full"><div class="w-1 h-1 bg-gray-400 rounded-full mt-2 mr-2"></div><textarea x-model="item.text" rows="1" class="flex-1 bg-transparent text-sm text-gray-600 dark:text-gray-400 outline-none resize-none border-b border-transparent focus:border-yellow-300" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea></div></template><button @click="removeMemoItem(bIdx, iIdx)" class="text-gray-300 hover:text-red-400 ml-2 opacity-0 group-hover:opacity-100"><i class="fas fa-trash-alt text-xs"></i></button></div></template><div class="flex gap-2 mt-2 pt-2 border-t border-yellow-200/50"><input type="text" x-model="block.newItemText" @keydown.enter="addMemoItem(bIdx, 'todo')" placeholder="新增項目..." class="flex-1 bg-white/50 dark:bg-black/10 border-none rounded-lg px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-yellow-400"><button @click="addMemoItem(bIdx, 'todo')" class="text-yellow-600 hover:text-yellow-800 p-1" title="待辦"><i class="fas fa-check-square"></i></button><button @click="addMemoItem(bIdx, 'ordered')" class="text-orange-500 hover:text-orange-700 p-1" title="數字"><i class="fas fa-list-ol"></i></button><button @click="addMemoItem(bIdx, 'text')" class="text-gray-500 hover:text-gray-700 p-1" title="文字"><i class="fas fa-align-left"></i></button></div></div></div></div></template><button @click="addMemoBlock()" class="w-full py-3 border-2 border-dashed border-yellow-200 dark:border-yellow-800 text-yellow-500 rounded-xl font-bold hover:bg-yellow-50 dark:hover:bg-yellow-900/10 transition"><i class="fas fa-folder-plus mr-2"></i> 新增分類清單</button></div>
+            <div class="space-y-4 mb-6"><template x-for="(block, bIdx) in memoBlocks" :key="bIdx"><div class="bg-yellow-50 dark:bg-yellow-900/10 rounded-2xl shadow-sm border border-yellow-100 dark:border-yellow-900/30 overflow-hidden"><div class="p-4 flex items-center justify-between cursor-pointer hover:bg-yellow-100/50 dark:hover:bg-yellow-900/20 transition" @click="block.isOpen = !block.isOpen"><div class="flex items-center gap-2 flex-1"><i class="fas fa-chevron-right text-yellow-600 text-xs transition-transform duration-200" :class="{'rotate-90': block.isOpen}"></i><input type="text" x-model="block.title" @click.stop class="bg-transparent font-bold text-yellow-800 dark:text-yellow-500 outline-none w-full"></div><div class="text-xs text-yellow-600 mr-2" x-show="!block.isOpen"><span x-text="block.items.length"></span> 項</div><button @click.stop="removeMemoBlock(bIdx)" class="text-gray-300 hover:text-red-400"><i class="fas fa-trash-alt text-xs"></i></button></div><div x-show="block.isOpen" x-collapse><div class="px-4 pb-4 space-y-1"><template x-for="(item, iIdx) in block.items" :key="iIdx"><div class="flex items-start gap-2 py-1 group"><input type="checkbox" x-model="item.checked" class="mt-1 w-4 h-4 rounded text-fuji"><input type="text" x-model="item.text" class="flex-1 ml-2 bg-transparent text-sm outline-none border-b border-transparent focus:border-yellow-300"><button @click="removeMemoItem(bIdx, iIdx)" class="text-gray-300 hover:text-red-400 ml-2"><i class="fas fa-trash-alt text-xs"></i></button></div></template><div class="flex gap-2 mt-2 pt-2 border-t border-yellow-200/50"><input type="text" x-model="block.newItemText" @keydown.enter="addMemoItem(bIdx, 'todo')" placeholder="新增項目..." class="flex-1 bg-white/50 dark:bg-black/10 border-none rounded-lg px-2 py-1 text-sm outline-none"><button @click="addMemoItem(bIdx, 'todo')" class="text-yellow-600 p-1"><i class="fas fa-check-square"></i></button></div></div></div></div></template><button @click="addMemoBlock()" class="w-full py-3 border-2 border-dashed border-yellow-200 text-yellow-500 rounded-xl font-bold"><i class="fas fa-folder-plus mr-2"></i> 新增分類清單</button></div>
             <div class="h-24"></div>
         </div>
 
         <div x-show="currentTab === 'weather'" x-transition.opacity>
             <div class="bg-gradient-to-r from-blue-500 to-fuji rounded-2xl p-5 text-white shadow-lg mb-6 relative overflow-hidden" x-init="fetchRealTimeWeather()">
-                <div class="relative z-10"><div class="flex justify-between items-start"><div><div class="text-xs opacity-80 mb-1 flex items-center gap-1"><i class="fas fa-location-arrow"></i> 目前位置</div><div class="text-2xl font-bold">實時天氣</div></div><button @click="fetchRealTimeWeather()" class="text-white/80 hover:text-white"><i class="fas fa-sync-alt" :class="{'fa-spin': realTimeWeather.loading}"></i></button></div><div class="mt-4 flex items-center gap-4" x-show="!realTimeWeather.loading && realTimeWeather.temp"><div class="text-5xl font-bold"><span x-text="realTimeWeather.temp"></span>°</div><div><div class="text-lg font-bold" x-text="realTimeWeather.desc"></div><div class="text-xs opacity-80">體感 <span x-text="realTimeWeather.feelsLike"></span>°</div></div></div><div class="mt-4 text-sm opacity-80" x-show="realTimeWeather.loading">正在定位並載入天氣...</div><div class="mt-4 text-sm text-red-200" x-show="realTimeWeather.error" x-text="realTimeWeather.error"></div></div><i class="fas fa-cloud absolute -right-4 -bottom-4 text-9xl text-white/10"></i>
+                <div class="relative z-10"><div class="flex justify-between items-start"><div><div class="text-xs opacity-80 mb-1 flex items-center gap-1"><i class="fas fa-location-arrow"></i> 目前位置</div><div class="text-2xl font-bold">實時天氣</div></div><button @click="fetchRealTimeWeather()" class="text-white/80 hover:text-white"><i class="fas fa-sync-alt" :class="{'fa-spin': realTimeWeather.loading}"></i></button></div><div class="mt-4 flex items-center gap-4" x-show="!realTimeWeather.loading && realTimeWeather.temp"><div class="text-5xl font-bold"><span x-text="realTimeWeather.temp"></span>°</div><div><div class="text-lg font-bold" x-text="realTimeWeather.desc"></div><div class="text-xs opacity-80">體感 <span x-text="realTimeWeather.feelsLike"></span>°</div></div></div><div class="mt-4 text-sm opacity-80" x-show="realTimeWeather.loading">正在定位並載入天氣...</div><div class="mt-4 text-sm text-red-200" x-show="realTimeWeather.error" x-text="realTimeWeather.error"></div></div>
             </div>
-            <div class="space-y-3 mt-2"><template x-for="(day, idx) in days" :key="idx"><div class="bg-white dark:bg-darkCard p-4 rounded-2xl card-shadow flex items-center justify-between transition-colors cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" @click="openLocationWeather(getRegion(idx))"><div class="flex items-center gap-3"><div class="text-center w-10"><div class="text-[10px] text-gray-400" x-text="day.dateStr"></div><div class="font-bold text-gray-800 dark:text-gray-200" x-text="day.weekday"></div></div><div class="h-8 w-[1px] bg-gray-100 dark:bg-gray-700"></div><div><div class="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2"><i :class="getWeatherIcon(idx)" class="text-fuji dark:text-blue-300"></i><span x-text="getRegion(idx)"></span></div><div class="text-[10px] text-gray-500 mt-0.5">預測降雪: <span x-text="getSnowProb(idx)"></span>%</div></div></div><div class="text-right"><div class="text-lg font-bold text-gray-800 dark:text-gray-100"><span x-text="getTemp(idx).max"></span>° <span class="text-sm text-gray-500" x-text="getTemp(idx).min"></span>°</div><div class="text-[10px] text-gray-400"><i class="fas fa-chevron-right"></i></div></div></div></template></div>
+            <div class="space-y-3 mt-2"><template x-for="(day, idx) in days" :key="idx"><div class="bg-white dark:bg-darkCard p-4 rounded-2xl card-shadow flex items-center justify-between transition-colors cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" @click="openLocationWeather(getRegion(idx))"><div class="flex items-center gap-3"><div class="text-center w-10"><div class="text-[10px] text-gray-400" x-text="day.dateStr"></div><div class="font-bold text-gray-800 dark:text-gray-200" x-text="day.weekday"></div></div><div class="h-8 w-[1px] bg-gray-100 dark:bg-gray-700"></div><div><div class="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2"><i :class="getWeatherIcon(idx)" class="text-fuji dark:text-blue-300"></i><span x-text="getRegion(idx)"></span></div><div class="text-[10px] text-gray-500 mt-0.5">預測降雪: <span x-text="getSnowProb(idx)"></span>%</div></div></div><div class="text-right"><div class="text-lg font-bold text-gray-800 dark:text-gray-100"><span x-text="getTemp(idx).max"></span>° <span class="text-sm text-gray-500" x-text="getTemp(idx).min"></span>°</div></div></div></template></div>
             <div class="h-24"></div>
         </div>
     </main>
@@ -270,6 +332,12 @@
     <div x-show="showSwapModal" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center px-4"><div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showSwapModal=false"></div><div class="bg-white dark:bg-darkCard w-full max-w-xs rounded-3xl p-5 relative z-10 shadow-xl border border-white/10 text-center"><h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">調動行程</h3><p class="text-sm text-gray-500 mb-4">將 <span class="font-bold text-fuji" x-text="days[selectedDayIdx].dateStr"></span> 的所有行程與...</p><div class="grid grid-cols-4 gap-2 mb-4"><template x-for="(day, idx) in days" :key="idx"><button @click="swapDayWith(idx)" x-show="idx !== selectedDayIdx" class="py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-xs font-bold hover:bg-fuji hover:text-white transition" x-text="day.dateStr"></button></template></div><button @click="showSwapModal=false" class="text-sm text-gray-400 underline">取消</button></div></div>
     
     <div x-show="showTransitModal" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center px-4"><div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeTransitModal()"></div><div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-3xl p-5 relative z-10 shadow-xl border border-white/10"><h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">設定路程</h3><div class="flex justify-between gap-2 mb-4"><button @click="transitEdit.type='walk'" :class="transitEdit.type==='walk'?'bg-fuji text-white':'bg-gray-100 dark:bg-gray-700 text-gray-500'" class="flex-1 py-2 rounded-xl text-xs font-bold transition"><i class="fas fa-walking"></i> 走路</button><button @click="transitEdit.type='train'" :class="transitEdit.type==='train'?'bg-fuji text-white':'bg-gray-100 dark:bg-gray-700 text-gray-500'" class="flex-1 py-2 rounded-xl text-xs font-bold transition"><i class="fas fa-subway"></i> 地鐵</button><button @click="transitEdit.type='car'" :class="transitEdit.type==='car'?'bg-fuji text-white':'bg-gray-100 dark:bg-gray-700 text-gray-500'" class="flex-1 py-2 rounded-xl text-xs font-bold transition"><i class="fas fa-car"></i> 開車</button></div><div class="mb-4"><label class="block text-xs text-gray-500 mb-1">預估時間 (例如: 15 min)</label><input type="text" x-model="transitEdit.time" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 outline-none focus:border-fuji"></div><div class="flex gap-3"><button @click="closeTransitModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded-xl font-bold text-sm">取消</button><button @click="saveTransit()" class="flex-1 py-2 bg-fuji text-white rounded-xl font-bold text-sm">確認</button></div></div></div>
+
+    <div x-show="showSpotModal" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center px-4"><div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeSpotModal()"></div><div class="bg-white dark:bg-darkCard w-full max-w-md rounded-3xl p-6 relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto border border-white/10"><h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><i class="fas fa-map-pin text-fuji dark:text-blue-400"></i> <span x-text="editingSpotId ? '編輯行程' : '新增行程'"></span></h3><div class="space-y-4"><div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">時間</label><input type="time" x-model="modalSpot.time" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 outline-none focus:border-fuji"></div><div class="flex gap-2"><div class="w-1/3"><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">分類</label><select x-model="modalSpot.type" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-2 py-2.5 text-sm outline-none focus:border-fuji"><option value="spot">景點</option><option value="food">餐廳</option><option value="shop">購物</option><option value="hotel">住宿</option><option value="trans">交通</option><option value="play">樂園</option></select></div><div class="flex-1"><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">名稱</label><input type="text" x-model="modalSpot.name" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm outline-none focus:border-fuji" placeholder="地點名稱"></div></div><div class="flex items-end gap-3 bg-blue-50 dark:bg-gray-800 p-3 rounded-xl border border-blue-100 dark:border-gray-700"><div class="flex-1"><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">花費 (JPY)</label><input type="number" x-model.number="modalSpot.cost" class="w-full bg-white dark:bg-gray-700 dark:text-white border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm outline-none"></div><label class="flex items-center gap-2 mb-2 cursor-pointer"><input type="checkbox" x-model="modalSpot.includeInBudget" class="w-4 h-4 rounded text-fuji focus:ring-fuji border-gray-300"><span class="text-xs text-gray-600 dark:text-gray-300 font-bold">加入預算</span></label></div><div class="bg-gray-50 dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700"><div class="flex gap-4 mb-2"><label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer"><input type="radio" value="auto" x-model="modalSpot.locationType" class="text-fuji focus:ring-fuji"> 自動地圖</label><label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer"><input type="radio" value="manual" x-model="modalSpot.locationType" class="text-fuji focus:ring-fuji"> 手動網址</label></div><div x-show="modalSpot.locationType === 'manual'"><input type="text" x-model="modalSpot.location" placeholder="輸入 Google Maps 連結" class="w-full bg-white dark:bg-gray-700 dark:text-white border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-xs outline-none"></div></div><div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">備註</label><textarea x-model="modalSpot.desc" rows="3" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm outline-none focus:border-fuji resize-none"></textarea></div><div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">封面圖片</label><label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition relative overflow-hidden"><img x-show="modalSpot.imgDisplay" :src="modalSpot.imgDisplay" class="absolute inset-0 w-full h-full object-cover"><div x-show="!modalSpot.imgDisplay" class="flex flex-col items-center justify-center pt-5 pb-6"><i class="fas fa-camera text-gray-400 text-2xl mb-2"></i><p class="text-xs text-gray-500">點擊拍照或上傳</p></div><input type="file" class="hidden" accept="image/*" @change="handleSpotImageUpload"></label></div></div><div class="flex gap-3 mt-6"><button @click="closeSpotModal()" class="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded-xl font-bold text-sm">取消</button><button @click="saveSpot()" class="flex-1 py-3 bg-fuji text-white rounded-xl font-bold text-sm shadow-md">確認儲存</button></div></div></div>
+
+    <div x-show="showGuideModal" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center px-4"><div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeGuideModal()"></div><div class="bg-white dark:bg-darkCard w-full max-w-md rounded-3xl p-6 relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto border border-white/10"><h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">編輯指南景點</h3><div class="space-y-4"><div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">標題</label><input type="text" x-model="modalGuide.title" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 outline-none focus:border-fuji"></div><div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">描述</label><textarea x-model="modalGuide.desc" rows="4" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm outline-none focus:border-fuji resize-none"></textarea></div><div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">圖片</label><label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition relative overflow-hidden"><img x-show="modalGuide.img" :src="modalGuide.img" class="absolute inset-0 w-full h-full object-cover"><div x-show="!modalGuide.img" class="flex flex-col items-center justify-center pt-5 pb-6"><i class="fas fa-camera text-gray-400 text-2xl mb-2"></i><p class="text-xs text-gray-500">上傳圖片</p></div><input type="file" class="hidden" accept="image/*" @change="handleGuideImageUpload"></label></div></div><div class="flex gap-3 mt-6"><button @click="closeGuideModal()" class="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded-xl font-bold text-sm">取消</button><button @click="saveGuide()" class="flex-1 py-3 bg-fuji text-white rounded-xl font-bold text-sm">儲存</button></div></div></div>
+
+    <div x-show="lightboxImg" x-cloak class="fixed inset-0 z-[70] bg-black/90 flex items-center justify-center p-4 cursor-zoom-out" @click="lightboxImg = null"><img :src="lightboxImg" class="max-w-full max-h-full rounded-lg shadow-2xl"></div>
 
     <script>
         function travelApp() {
