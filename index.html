@@ -55,27 +55,14 @@
         .drag-handle { cursor: grab; touch-action: none; }
         [x-cloak] { display: none !important; }
         
-        /* Map */
-        #map-container { height: calc(100vh - 280px); width: 100%; border-radius: 16px; z-index: 1; }
+        #map-container { height: calc(100vh - 300px); width: 100%; border-radius: 16px; z-index: 1; }
         .custom-marker { background-color: #2C5F8A; color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
         
-        /* Route Line (Vertical Stack) */
-        .route-connector {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 0;
-            position: relative;
-        }
+        .route-connector { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 0; position: relative; }
         .line-segment { width: 2px; height: 20px; background-color: #cbd5e1; }
         .dark .line-segment { background-color: #4b5563; }
         
-        .transit-pill {
-            background-color: white; border: 1px solid #e2e8f0; border-radius: 9999px;
-            padding: 4px 12px; font-size: 11px; color: #64748b; font-weight: bold;
-            display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); z-index: 2;
-        }
+        .transit-pill { background-color: white; border: 1px solid #e2e8f0; border-radius: 9999px; padding: 4px 12px; font-size: 11px; color: #64748b; font-weight: bold; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 2; cursor: pointer; }
         .dark .transit-pill { background-color: #1f2937; border-color: #374151; color: #9ca3af; }
 
         .pie-chart { width: 120px; height: 120px; border-radius: 50%; position: relative; }
@@ -84,6 +71,7 @@
         .explore-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: all 0.2s; border: 1px solid #f1f5f9; }
         .dark .explore-btn { background: #25262b; border-color: #374151; }
         .explore-btn:active { transform: scale(0.95); background: #f8fafc; }
+        .banner-placeholder { background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
     </style>
 </head>
 <body x-data="travelApp()" :class="{'dark': isDarkMode}" class="bg-warm text-gray-800 dark:bg-darkBg dark:text-darkText transition-colors duration-300">
@@ -114,29 +102,27 @@
 
     <div class="sticky top-0 z-40 bg-white/95 dark:bg-darkCard/95 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-gray-700 transition-colors duration-300">
         <div x-show="currentTab === 'itinerary'" class="flex flex-col px-2 pb-2">
-            <div class="flex overflow-x-auto hide-scrollbar py-3 px-1 gap-3 w-full">
-                <template x-for="(day, index) in days" :key="index">
-                    <div @click="changeDay(index)" 
-                         :class="{'bg-fuji text-white shadow-md scale-105': selectedDayIdx === index, 'bg-gray-50 text-gray-400 border border-gray-100 dark:bg-gray-800 dark:border-gray-700': selectedDayIdx !== index}"
-                         class="flex-shrink-0 w-14 h-16 rounded-xl flex flex-col items-center justify-center transition-all duration-200 cursor-pointer">
-                        <span class="text-[9px] font-bold tracking-wider opacity-80" x-text="day.dateStr"></span>
-                        <span class="text-lg font-bold" x-text="day.dayNum"></span>
-                        <span class="text-[9px]" x-show="selectedDayIdx === index" x-text="day.weekday"></span>
-                    </div>
-                </template>
-                <div @click="openSwapModal()" class="flex-shrink-0 w-14 h-16 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-700 text-gray-400 hover:text-fuji cursor-pointer">
-                    <i class="fas fa-exchange-alt"></i>
-                    <span class="text-[9px] mt-1">調動</span>
+            <div class="flex items-center w-full">
+                <div class="flex overflow-x-auto hide-scrollbar py-3 px-1 gap-3 flex-1">
+                    <template x-for="(day, index) in itineraryData" :key="index">
+                        <div @click="changeDay(index)" 
+                             :class="{'bg-fuji text-white shadow-md scale-105': selectedDayIdx === index, 'bg-gray-50 text-gray-400 border border-gray-100 dark:bg-gray-800 dark:border-gray-700': selectedDayIdx !== index}"
+                             class="flex-shrink-0 w-14 h-16 rounded-xl flex flex-col items-center justify-center transition-all duration-200 cursor-pointer">
+                            <span class="text-[9px] font-bold tracking-wider opacity-80" x-text="day.dateStr"></span>
+                            <span class="text-lg font-bold" x-text="day.dayNum"></span>
+                            <span class="text-[9px]" x-show="selectedDayIdx === index" x-text="day.weekday"></span>
+                        </div>
+                    </template>
                 </div>
+                <button @click="openDaySortModal()" class="p-3 text-gray-400 hover:text-fuji transition flex flex-col items-center ml-1">
+                    <i class="fas fa-tasks"></i>
+                    <span class="text-[9px] font-bold mt-0.5">管理</span>
+                </button>
             </div>
 
             <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-1 flex mx-1 mt-1">
-                <button @click="toggleViewMode('list')" :class="viewMode==='list' ? 'bg-white dark:bg-gray-600 text-fuji dark:text-white shadow-sm' : 'text-gray-400'" class="flex-1 py-1.5 rounded-md text-xs font-bold transition flex items-center justify-center gap-1">
-                    <i class="fas fa-list-ul"></i> 行程列表
-                </button>
-                <button @click="toggleViewMode('map')" :class="viewMode==='map' ? 'bg-white dark:bg-gray-600 text-fuji dark:text-white shadow-sm' : 'text-gray-400'" class="flex-1 py-1.5 rounded-md text-xs font-bold transition flex items-center justify-center gap-1">
-                    <i class="fas fa-map-marked-alt"></i> 地圖模式
-                </button>
+                <button @click="toggleViewMode('list')" :class="viewMode==='list' ? 'bg-white dark:bg-gray-600 text-fuji dark:text-white shadow-sm' : 'text-gray-400'" class="flex-1 py-1.5 rounded-md text-xs font-bold transition flex items-center justify-center gap-1"><i class="fas fa-list-ul"></i> 列表</button>
+                <button @click="toggleViewMode('map')" :class="viewMode==='map' ? 'bg-white dark:bg-gray-600 text-fuji dark:text-white shadow-sm' : 'text-gray-400'" class="flex-1 py-1.5 rounded-md text-xs font-bold transition flex items-center justify-center gap-1"><i class="fas fa-map-marked-alt"></i> 地圖</button>
             </div>
         </div>
         <div x-show="currentTab !== 'itinerary'" class="py-4 px-5 text-center font-bold text-fuji dark:text-blue-300"><span x-text="getTabTitle()"></span></div>
@@ -145,7 +131,7 @@
     <main class="pt-4 px-4 min-h-screen">
 
         <div x-show="currentTab === 'itinerary'" x-transition.opacity>
-            <div x-show="viewMode === 'list'" id="itinerary-list" class="space-y-0">
+            <div x-show="viewMode === 'list'" id="itinerary-list" class="space-y-0 pb-24">
                 <template x-for="(spot, index) in currentDayData.spots" :key="spot.id">
                     <div class="flex flex-col w-full">
                         
@@ -153,32 +139,23 @@
                             <div class="flex justify-between items-center mb-2 border-b border-gray-100 dark:border-gray-700 pb-2">
                                 <div class="flex items-center gap-2">
                                     <span class="text-sm font-bold text-fuji dark:text-blue-300 font-mono" x-text="spot.time || '--:--'"></span>
-                                    <span :class="getSpotClass(spot.type)" class="text-[10px] px-2 py-0.5 rounded text-white font-bold flex items-center gap-1">
-                                        <i :class="getSpotIcon(spot.type)"></i><span x-text="spot.typeLabel"></span>
-                                    </span>
+                                    <span :class="getSpotClass(spot.type)" class="text-[10px] px-2 py-0.5 rounded text-white font-bold flex items-center gap-1"><i :class="getSpotIcon(spot.type)"></i><span x-text="spot.typeLabel"></span></span>
                                 </div>
                                 <div class="flex items-center gap-1">
-                                    <div x-show="spot.cost > 0" class="text-xs font-bold text-accent mr-2">
-                                        <span x-show="spot.includeInBudget" class="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-500 px-1 rounded mr-1"><i class="fas fa-calculator"></i></span>
-                                        <span x-text="formatMoney(spot.cost)"></span>
-                                    </div>
+                                    <div x-show="spot.cost > 0" class="text-xs font-bold text-accent mr-2"><span x-show="spot.includeInBudget" class="text-[9px] bg-gray-100 dark:bg-gray-700 text-gray-500 px-1 rounded mr-1"><i class="fas fa-calculator"></i></span><span x-text="formatMoney(spot.cost)"></span></div>
                                     <button @click="editSpot(spot)" class="text-gray-300 hover:text-fuji px-2"><i class="fas fa-pen text-xs"></i></button>
                                     <div class="drag-handle text-gray-300 p-1 cursor-move"><i class="fas fa-grip-lines"></i></div>
                                 </div>
                             </div>
                             <div class="flex gap-4">
-                                <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-xl flex-shrink-0 overflow-hidden relative shadow-sm">
-                                    <img :src="getImage(spot)" class="w-full h-full object-cover" alt="spot">
-                                </div>
+                                <div class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-xl flex-shrink-0 overflow-hidden relative shadow-sm"><img :src="getImage(spot)" class="w-full h-full object-cover" alt="spot"></div>
                                 <div class="flex-1">
                                     <div class="flex items-start justify-between">
                                         <input type="text" x-model="spot.name" class="w-full font-bold text-gray-800 dark:text-gray-100 text-base leading-tight bg-transparent border-b border-transparent focus:border-gray-200 dark:focus:border-gray-600 outline-none mb-1">
                                         <button @click="openGuideForSpot(spot)" class="text-xs text-gray-400 hover:text-fuji ml-2"><i class="fas fa-info-circle"></i></button>
                                     </div>
                                     <div class="mt-1 flex gap-2">
-                                        <a :href="getMapLink(spot)" target="_blank" class="text-[10px] text-blue-500 dark:text-blue-400 flex items-center gap-1 hover:underline">
-                                            <i class="fas fa-location-arrow"></i> 導航
-                                        </a>
+                                        <a :href="getMapLink(spot)" target="_blank" class="text-[10px] text-blue-500 dark:text-blue-400 flex items-center gap-1 hover:underline"><i class="fas fa-location-arrow"></i> 導航</a>
                                     </div>
                                     <textarea x-model="spot.desc" rows="1" class="w-full text-xs text-gray-500 dark:text-gray-400 mt-1 bg-transparent border-none outline-none resize-none p-0" placeholder="備註..."></textarea>
                                 </div>
@@ -191,27 +168,22 @@
                             <div class="flex items-center gap-2">
                                 <div class="transit-pill cursor-pointer" @click="editTransit(spot, currentDayData.spots[index+1])">
                                     <i :class="getTransitIcon(spot.transitType)"></i>
-                                    <span x-text="spot.transitTime || '設定'"></span>
+                                    <span x-text="calculateDistanceTime(spot, currentDayData.spots[index+1])"></span>
                                 </div>
-                                <button @click="navigateBetween(spot, currentDayData.spots[index+1])" class="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-2 py-1 rounded-full hover:bg-blue-100 font-bold">
-                                    路線
-                                </button>
+                                <button @click="navigateBetween(spot, currentDayData.spots[index+1])" class="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-2 py-1 rounded-full hover:bg-blue-100 font-bold">路線</button>
                             </div>
                             <div class="line-segment"></div>
                         </div>
 
                     </div>
                 </template>
-                <button @click="openSpotModal()" class="w-full mt-8 mb-24 py-3 bg-white dark:bg-darkCard border-2 border-dashed border-fuji dark:border-blue-700 text-fuji dark:text-blue-300 rounded-xl font-bold shadow-sm hover:bg-blue-50 dark:hover:bg-gray-800 flex items-center justify-center gap-2"><i class="fas fa-plus-circle"></i> 新增行程景點</button>
+                <button @click="openSpotModal()" class="w-full mt-8 mb-8 py-3 bg-white dark:bg-darkCard border-2 border-dashed border-fuji dark:border-blue-700 text-fuji dark:text-blue-300 rounded-xl font-bold shadow-sm hover:bg-blue-50 dark:hover:bg-gray-800 flex items-center justify-center gap-2"><i class="fas fa-plus-circle"></i> 新增行程景點</button>
             </div>
 
             <div x-show="viewMode === 'map'" class="relative h-full w-full">
                 <div id="map-container" class="shadow-inner border border-gray-200 dark:border-gray-700 relative">
-                    <button @click="locateMe()" class="absolute top-4 right-4 bg-white dark:bg-darkCard p-2 rounded-lg shadow-md z-[500] text-gray-600 dark:text-gray-200 hover:text-blue-500">
-                        <i class="fas fa-crosshairs"></i>
-                    </button>
+                    <button @click="locateMe()" class="absolute top-4 right-4 bg-white dark:bg-darkCard p-2 rounded-lg shadow-md z-[500] text-gray-600 dark:text-gray-200 hover:text-blue-500"><i class="fas fa-crosshairs"></i></button>
                 </div>
-                
                 <div class="fixed bottom-20 left-0 right-0 bg-white/90 dark:bg-darkCard/90 backdrop-blur border-t border-gray-200 dark:border-gray-700 p-3 z-30 flex overflow-x-auto gap-2 hide-scrollbar">
                     <template x-for="(spot, index) in currentDayData.spots" :key="spot.id">
                         <button @click="panToSpot(spot)" class="flex-shrink-0 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-fuji hover:text-white transition flex items-center gap-1 border border-transparent focus:border-fuji">
@@ -220,7 +192,9 @@
                         </button>
                     </template>
                 </div>
+                <div x-show="mapSelectedSpot" x-transition.move.bottom class="fixed bottom-36 left-4 right-4 bg-white dark:bg-darkCard p-4 rounded-2xl shadow-2xl z-[1000] border border-gray-100 dark:border-gray-600"><div class="flex gap-4"><div class="w-16 h-16 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0"><img :src="mapSelectedSpot?.img || 'icon.png'" class="w-full h-full object-cover"></div><div class="flex-1"><div class="flex justify-between items-start"><h3 class="font-bold text-gray-800 dark:text-white text-lg leading-tight" x-text="mapSelectedSpot?.name"></h3><button @click="mapSelectedSpot = null" class="text-gray-400"><i class="fas fa-times"></i></button></div><p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2" x-text="mapSelectedSpot?.desc"></p><div class="flex gap-2 mt-2"><a :href="getMapLink(mapSelectedSpot)" target="_blank" class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-lg font-bold">導航</a></div></div></div></div>
             </div>
+            <div class="h-24"></div> 
         </div>
 
         <div x-show="currentTab === 'wallet'" x-transition.opacity>
@@ -234,6 +208,7 @@
                     <div class="text-right"><div class="text-xs text-blue-200">已支出</div><div class="text-lg font-bold opacity-90" x-text="formatMoney(totalSpent)"></div></div>
                 </div>
             </div>
+
             <div class="bg-white dark:bg-darkCard rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden mb-6">
                 <div class="bg-gray-50 dark:bg-gray-800 p-4 text-right border-b border-gray-100 dark:border-gray-700">
                     <div class="text-xs text-gray-400 h-4" x-text="calc.equation"></div>
@@ -248,12 +223,29 @@
                     <template x-for="btn in calcButtons"><button @click="handleCalc(btn)" :class="['h-14 rounded-xl font-bold text-lg transition active:scale-95 shadow-sm', isOperator(btn) || btn==='%' ? 'bg-calcOp dark:bg-calcOpDark text-accent' : btn==='Save' ? 'bg-fuji text-white col-span-4' : 'bg-white dark:bg-calcBtnDark text-gray-700 dark:text-gray-200']"><span x-show="btn!=='Save'&&btn!=='back'" x-text="btn"></span><span x-show="btn==='back'"><i class="fas fa-backspace"></i></span><span x-show="btn==='Save'" class="text-sm"><i class="fas fa-save"></i> 記帳</span></button></template>
                 </div>
             </div>
+
+            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-4 mb-6 border border-blue-100 dark:border-blue-800">
+                <h4 class="font-bold text-fuji dark:text-blue-300 text-sm mb-2"><i class="fas fa-calendar-alt mr-1"></i> 行程預算明細</h4>
+                <div class="space-y-2">
+                    <template x-for="(cost, dayIdx) in itineraryExpensesBreakdown" :key="dayIdx">
+                        <div class="flex justify-between text-xs text-gray-600 dark:text-gray-300 border-b border-blue-100 dark:border-blue-800 pb-1" x-show="cost > 0">
+                            <span x-text="itineraryData[dayIdx].dateStr + ' ' + itineraryData[dayIdx].dayNum"></span>
+                            <span class="font-bold" x-text="formatMoney(cost)"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-darkCard rounded-2xl p-5 shadow-sm mb-6 flex items-center justify-between">
+                <div class="pie-chart shadow-inner" :style="pieChartStyle"></div>
+                <div class="flex-1 pl-6 space-y-1">
+                    <template x-for="cat in sortedCategories" :key="cat.name">
+                        <div class="flex items-center justify-between text-xs" x-show="cat.value > 0"><div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full" :class="getBudgetColor(cat.name)"></div><span class="text-gray-600 dark:text-gray-300" x-text="cat.name"></span></div><span class="font-bold text-gray-800 dark:text-gray-100" x-text="Math.round(cat.percent) + '%'"></span></div>
+                    </template>
+                </div>
+            </div>
             <div class="space-y-3">
                 <h3 class="font-bold text-gray-800 dark:text-white px-2">支出紀錄</h3>
-                <div x-show="itinerarySpent > 0" class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl shadow-sm flex items-center justify-between border-l-4 border-blue-500">
-                    <div><div class="font-bold text-fuji dark:text-blue-300 text-sm">行程預定花費 (自動同步)</div></div>
-                    <div class="text-right"><div class="font-bold text-fuji dark:text-blue-300" x-text="formatMoney(itinerarySpent)"></div></div>
-                </div>
                 <template x-for="(tx, index) in walletData.transactions" :key="index">
                     <div class="bg-white dark:bg-darkCard p-3 rounded-xl shadow-sm flex items-center justify-between border-l-4" :class="getBudgetBorderColor(tx.category)">
                         <div><div class="font-bold text-gray-800 dark:text-gray-200 text-sm" x-text="tx.desc"></div><div class="text-[10px] text-gray-400" x-text="tx.category"></div></div>
@@ -264,10 +256,39 @@
             <div class="h-24"></div>
         </div>
 
+        <div x-show="currentTab === 'memo'" x-transition.opacity>
+            <div class="space-y-4 mb-6 mt-2">
+                <template x-for="(block, bIdx) in memoBlocks" :key="bIdx">
+                    <div class="bg-yellow-50 dark:bg-yellow-900/10 rounded-2xl shadow-sm border border-yellow-100 dark:border-yellow-900/30 overflow-hidden">
+                        <div class="p-4 flex items-center justify-between cursor-pointer hover:bg-yellow-100/50 dark:hover:bg-yellow-900/20 transition" @click="block.isOpen = !block.isOpen">
+                            <div class="flex items-center gap-2 flex-1"><i class="fas fa-chevron-right text-yellow-600 text-xs transition-transform duration-200" :class="{'rotate-90': block.isOpen}"></i><input type="text" x-model="block.title" @click.stop class="bg-transparent font-bold text-yellow-800 dark:text-yellow-500 outline-none w-full"></div>
+                            <div class="text-xs text-yellow-600 mr-2" x-show="!block.isOpen"><span x-text="block.items.length"></span> 項</div>
+                            <button @click.stop="removeMemoBlock(bIdx)" class="text-gray-300 hover:text-red-400"><i class="fas fa-trash-alt text-xs"></i></button>
+                        </div>
+                        <div x-show="block.isOpen" x-collapse><div class="px-4 pb-4 space-y-1"><template x-for="(item, iIdx) in block.items" :key="iIdx"><div class="flex items-start gap-2 py-1 group"><input type="checkbox" x-model="item.checked" class="mt-1 w-4 h-4 rounded text-fuji"><input type="text" x-model="item.text" class="flex-1 ml-2 bg-transparent text-sm outline-none border-b border-transparent focus:border-yellow-300"><button @click="removeMemoItem(bIdx, iIdx)" class="text-gray-300 hover:text-red-400 ml-2"><i class="fas fa-trash-alt text-xs"></i></button></div></template><div class="flex gap-2 mt-2 pt-2 border-t border-yellow-200/50"><input type="text" x-model="block.newItemText" @keydown.enter="addMemoItem(bIdx, 'todo')" placeholder="新增項目..." class="flex-1 bg-white/50 dark:bg-black/10 border-none rounded-lg px-2 py-1 text-sm outline-none"><button @click="addMemoItem(bIdx, 'todo')" class="text-yellow-600 p-1"><i class="fas fa-check-square"></i></button></div></div></div>
+                    </div>
+                </template>
+                <button @click="addMemoBlock()" class="w-full py-3 border-2 border-dashed border-yellow-200 dark:border-yellow-800 text-yellow-500 rounded-xl font-bold"><i class="fas fa-folder-plus mr-2"></i> 新增分類清單</button>
+            </div>
+            <div class="h-24"></div>
+        </div>
+
         <div x-show="currentTab === 'guide'" x-transition.opacity>
+            <div class="bg-gradient-to-r from-blue-500 to-fuji rounded-2xl p-5 text-white shadow-lg mb-6 relative overflow-hidden" x-init="fetchRealTimeWeather()">
+                <div class="relative z-10"><div class="flex justify-between items-start"><div><div class="text-xs opacity-80 mb-1 flex items-center gap-1"><i class="fas fa-location-arrow"></i> 目前位置</div><div class="text-2xl font-bold">實時天氣</div></div><button @click="fetchRealTimeWeather()" class="text-white/80 hover:text-white"><i class="fas fa-sync-alt" :class="{'fa-spin': realTimeWeather.loading}"></i></button></div><div class="mt-4 flex items-center gap-4" x-show="!realTimeWeather.loading && realTimeWeather.temp"><div class="text-5xl font-bold"><span x-text="realTimeWeather.temp"></span>°</div><div><div class="text-lg font-bold" x-text="realTimeWeather.desc"></div><div class="text-xs opacity-80">體感 <span x-text="realTimeWeather.feelsLike"></span>°</div></div></div><div class="mt-4 text-sm opacity-80" x-show="realTimeWeather.loading">定位載入中...</div></div>
+            </div>
+            
+            <h3 class="font-bold text-gray-800 dark:text-white px-1 mb-2">周邊快搜 (Google Maps)</h3>
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <button @click="searchNearby('親子餐廳')" class="explore-btn text-orange-500 hover:bg-orange-50"><i class="fas fa-utensils text-2xl mb-1"></i><span class="text-xs font-bold">親子餐廳</span></button>
+                <button @click="searchNearby('室內景點')" class="explore-btn text-blue-500 hover:bg-blue-50"><i class="fas fa-umbrella-beach text-2xl mb-1"></i><span class="text-xs font-bold">室內景點</span></button>
+                <button @click="searchNearby('便利商店')" class="explore-btn text-green-500 hover:bg-green-50"><i class="fas fa-store text-2xl mb-1"></i><span class="text-xs font-bold">便利商店</span></button>
+                <button @click="searchNearby('廁所')" class="explore-btn text-gray-500 hover:bg-gray-50"><i class="fas fa-restroom text-2xl mb-1"></i><span class="text-xs font-bold">急用廁所</span></button>
+            </div>
+
             <div class="bg-white dark:bg-darkCard rounded-2xl p-5 shadow-md mb-6 relative border border-gray-100 dark:border-gray-700">
                 <div class="flex items-center justify-between mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
-                    <div class="flex items-center gap-2"><i class="fas fa-book-reader text-fuji dark:text-blue-300 text-lg"></i><h3 class="font-bold text-gray-800 dark:text-white text-lg">景點介紹</h3></div>
+                    <div class="flex items-center gap-2"><i class="fas fa-heart text-accent text-lg"></i><h3 class="font-bold text-gray-800 dark:text-white text-lg">我的收藏 / 雨備</h3></div>
                     <button @click="openGuideModal()" class="text-xs bg-fuji text-white px-2 py-1 rounded shadow"><i class="fas fa-plus"></i> 新增</button>
                 </div>
                 <div class="space-y-4">
@@ -275,70 +296,35 @@
                         <div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl relative group border border-gray-100 dark:border-gray-700">
                             <div class="flex gap-3">
                                 <div x-show="guide.img" class="w-16 h-16 flex-shrink-0 bg-gray-200 rounded-lg overflow-hidden cursor-pointer" @click="openLightbox(guide.img)"><img :src="guide.img" class="w-full h-full object-cover"></div>
-                                <div class="flex-1"><h4 class="font-bold text-fuji dark:text-blue-300 text-sm mb-1" x-text="guide.title"></h4><p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed mb-2" x-text="guide.desc"></p><button @click="addSpotFromGuide(guide)" class="text-[10px] bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-200 px-2 py-1 rounded"><i class="fas fa-plus"></i> 加入行程</button></div>
+                                <div class="flex-1"><h4 class="font-bold text-fuji dark:text-blue-300 text-sm mb-1" x-text="guide.title"></h4><p class="text-xs text-gray-600 dark:text-gray-300 leading-relaxed mb-2" x-text="guide.desc"></p>
+                                    <div class="flex gap-2">
+                                        <button @click="openMapSearch(guide.title)" class="text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded"><i class="fas fa-map-marker-alt"></i> 地圖</button>
+                                        <button @click="addSpotFromGuide(guide)" class="text-[10px] bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-200 px-2 py-1 rounded"><i class="fas fa-plus"></i> 加入行程</button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="absolute top-2 right-2 flex gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition"><button @click="openGuideModal(guide, idx)" class="text-gray-400 hover:text-fuji p-1 bg-white/80 rounded"><i class="fas fa-pen text-xs"></i></button><button @click="removeGuide(idx)" class="text-gray-400 hover:text-red-400 p-1 bg-white/80 rounded"><i class="fas fa-trash text-xs"></i></button></div>
                         </div>
                     </template>
                 </div>
             </div>
-            <div class="space-y-4 mb-6"><template x-for="(block, bIdx) in memoBlocks" :key="bIdx"><div class="bg-yellow-50 dark:bg-yellow-900/10 rounded-2xl shadow-sm border border-yellow-100 dark:border-yellow-900/30 overflow-hidden"><div class="p-4 flex items-center justify-between cursor-pointer hover:bg-yellow-100/50 dark:hover:bg-yellow-900/20 transition" @click="block.isOpen = !block.isOpen"><div class="flex items-center gap-2 flex-1"><i class="fas fa-chevron-right text-yellow-600 text-xs transition-transform duration-200" :class="{'rotate-90': block.isOpen}"></i><input type="text" x-model="block.title" @click.stop class="bg-transparent font-bold text-yellow-800 dark:text-yellow-500 outline-none w-full"></div><div class="text-xs text-yellow-600 mr-2" x-show="!block.isOpen"><span x-text="block.items.length"></span> 項</div><button @click.stop="removeMemoBlock(bIdx)" class="text-gray-300 hover:text-red-400"><i class="fas fa-trash-alt text-xs"></i></button></div><div x-show="block.isOpen" x-collapse><div class="px-4 pb-4 space-y-1"><template x-for="(item, iIdx) in block.items" :key="iIdx"><div class="flex items-start gap-2 py-1 group"><input type="checkbox" x-model="item.checked" class="mt-1 w-4 h-4 rounded text-fuji"><input type="text" x-model="item.text" class="flex-1 ml-2 bg-transparent text-sm outline-none border-b border-transparent focus:border-yellow-300"><button @click="removeMemoItem(bIdx, iIdx)" class="text-gray-300 hover:text-red-400 ml-2"><i class="fas fa-trash-alt text-xs"></i></button></div></template><div class="flex gap-2 mt-2 pt-2 border-t border-yellow-200/50"><input type="text" x-model="block.newItemText" @keydown.enter="addMemoItem(bIdx, 'todo')" placeholder="新增項目..." class="flex-1 bg-white/50 dark:bg-black/10 border-none rounded-lg px-2 py-1 text-sm outline-none"><button @click="addMemoItem(bIdx, 'todo')" class="text-yellow-600 p-1"><i class="fas fa-check-square"></i></button></div></div></div></div></template><button @click="addMemoBlock()" class="w-full py-3 border-2 border-dashed border-yellow-200 text-yellow-500 rounded-xl font-bold"><i class="fas fa-folder-plus mr-2"></i> 新增分類清單</button></div>
             <div class="h-24"></div>
         </div>
 
-        <div x-show="currentTab === 'explore'" x-transition.opacity>
-            <div class="bg-gradient-to-r from-blue-500 to-fuji rounded-2xl p-5 text-white shadow-lg mb-6 relative overflow-hidden" x-init="fetchRealTimeWeather()">
-                <div class="relative z-10">
-                    <div class="flex justify-between items-start">
-                        <div><div class="text-xs opacity-80 mb-1 flex items-center gap-1"><i class="fas fa-location-arrow"></i> 目前位置</div><div class="text-2xl font-bold">實時天氣</div></div>
-                        <button @click="fetchRealTimeWeather()" class="text-white/80 hover:text-white"><i class="fas fa-sync-alt" :class="{'fa-spin': realTimeWeather.loading}"></i></button>
-                    </div>
-                    <div class="mt-4 flex items-center gap-4" x-show="!realTimeWeather.loading && realTimeWeather.temp">
-                        <div class="text-5xl font-bold"><span x-text="realTimeWeather.temp"></span>°</div>
-                        <div><div class="text-lg font-bold" x-text="realTimeWeather.desc"></div><div class="text-xs opacity-80">體感 <span x-text="realTimeWeather.feelsLike"></span>°</div></div>
-                    </div>
-                    <div class="mt-4 text-sm opacity-80" x-show="realTimeWeather.loading">定位載入中...</div>
-                    <div class="mt-4 text-sm text-red-200" x-show="realTimeWeather.error" x-text="realTimeWeather.error"></div>
-                </div>
-                <i class="fas fa-cloud absolute -right-4 -bottom-4 text-9xl text-white/10"></i>
-            </div>
-            
-            <h3 class="font-bold text-gray-800 dark:text-white px-1 mb-2">周邊快搜</h3>
-            <div class="grid grid-cols-2 gap-3 mb-6">
-                <button @click="searchNearby('親子餐廳')" class="explore-btn text-orange-500 hover:bg-orange-50"><i class="fas fa-utensils text-2xl mb-1"></i><span class="text-xs font-bold text-gray-600 dark:text-gray-300">親子餐廳</span></button>
-                <button @click="searchNearby('室內景點')" class="explore-btn text-blue-500 hover:bg-blue-50"><i class="fas fa-umbrella-beach text-2xl mb-1"></i><span class="text-xs font-bold text-gray-600 dark:text-gray-300">室內景點</span></button>
-                <button @click="searchNearby('便利商店')" class="explore-btn text-green-500 hover:bg-green-50"><i class="fas fa-store text-2xl mb-1"></i><span class="text-xs font-bold text-gray-600 dark:text-gray-300">便利商店</span></button>
-                <button @click="searchNearby('廁所')" class="explore-btn text-gray-500 hover:bg-gray-50"><i class="fas fa-restroom text-2xl mb-1"></i><span class="text-xs font-bold text-gray-600 dark:text-gray-300">急用廁所</span></button>
-            </div>
-            
-            <h3 class="font-bold text-gray-800 dark:text-white px-1 mb-2">推薦雨備 (東京/富士)</h3>
-            <div class="space-y-3">
-                <template x-for="plan in rainyPlans">
-                    <div class="bg-white dark:bg-darkCard p-3 rounded-xl shadow-sm flex justify-between items-center cursor-pointer hover:bg-gray-50" @click="openMapSearch(plan.name)">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500"><i class="fas fa-umbrella"></i></div>
-                            <div><div class="font-bold text-gray-800 dark:text-gray-200 text-sm" x-text="plan.name"></div><div class="text-[10px] text-gray-400" x-text="plan.desc"></div></div>
-                        </div>
-                        <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
-                    </div>
-                </template>
-            </div>
-            <div class="h-24"></div>
-        </div>
     </main>
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-darkCard/95 backdrop-blur-xl border-t border-gray-200 dark:border-gray-700 transition-colors z-40 safe-bottom">
         <div class="grid grid-cols-4 items-center h-16 max-w-md mx-auto">
-            <button @click="currentTab='itinerary'" :class="currentTab==='itinerary'?'text-fuji dark:text-blue-300':'text-gray-400'" class="flex flex-col items-center justify-center h-full active:scale-95"><i class="fas fa-map-marked-alt text-xl mb-1"></i><span class="text-[9px] font-bold">行程</span></button>
-            <button @click="currentTab='wallet'" :class="currentTab==='wallet'?'text-fuji dark:text-blue-300':'text-gray-400'" class="flex flex-col items-center justify-center h-full active:scale-95"><i class="fas fa-wallet text-xl mb-1"></i><span class="text-[9px] font-bold">錢包</span></button>
-            <button @click="currentTab='guide'" :class="currentTab==='guide'?'text-fuji dark:text-blue-300':'text-gray-400'" class="flex flex-col items-center justify-center h-full active:scale-95"><i class="fas fa-book-open text-xl mb-1"></i><span class="text-[9px] font-bold">指南</span></button>
-            <button @click="currentTab='explore'" :class="currentTab==='explore'?'text-fuji dark:text-blue-300':'text-gray-400'" class="flex flex-col items-center justify-center h-full active:scale-95"><i class="fas fa-compass text-xl mb-1"></i><span class="text-[9px] font-bold">探索</span></button>
+            <button @click="currentTab='itinerary'" :class="{'text-fuji dark:text-blue-300': currentTab === 'itinerary', 'text-gray-400 dark:text-gray-500': currentTab !== 'itinerary'}" class="flex flex-col items-center justify-center h-full active:scale-95"><i class="fas fa-map-marked-alt text-xl mb-1"></i><span class="text-[9px] font-bold">行程</span></button>
+            <button @click="currentTab='wallet'" :class="{'text-fuji dark:text-blue-300': currentTab === 'wallet', 'text-gray-400 dark:text-gray-500': currentTab !== 'wallet'}" class="flex flex-col items-center justify-center h-full active:scale-95"><i class="fas fa-wallet text-xl mb-1"></i><span class="text-[9px] font-bold">錢包</span></button>
+            <button @click="currentTab='memo'" :class="{'text-fuji dark:text-blue-300': currentTab === 'memo', 'text-gray-400 dark:text-gray-500': currentTab !== 'memo'}" class="flex flex-col items-center justify-center h-full active:scale-95"><i class="fas fa-clipboard-list text-xl mb-1"></i><span class="text-[9px] font-bold">備忘</span></button>
+            <button @click="currentTab='guide'" :class="{'text-fuji dark:text-blue-300': currentTab === 'guide', 'text-gray-400 dark:text-gray-500': currentTab !== 'guide'}" class="flex flex-col items-center justify-center h-full active:scale-95"><i class="fas fa-compass text-xl mb-1"></i><span class="text-[9px] font-bold">指南</span></button>
         </div>
     </nav>
 
-    <div x-show="showSwapModal" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center px-4"><div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showSwapModal=false"></div><div class="bg-white dark:bg-darkCard w-full max-w-xs rounded-3xl p-5 relative z-10 shadow-xl border border-white/10 text-center"><h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">調動行程</h3><p class="text-sm text-gray-500 mb-4">將 <span class="font-bold text-fuji" x-text="days[selectedDayIdx].dateStr"></span> 的所有行程與...</p><div class="grid grid-cols-4 gap-2 mb-4"><template x-for="(day, idx) in days" :key="idx"><button @click="swapDayWith(idx)" x-show="idx !== selectedDayIdx" class="py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-xs font-bold hover:bg-fuji hover:text-white transition" x-text="day.dateStr"></button></template></div><button @click="showSwapModal=false" class="text-sm text-gray-400 underline">取消</button></div></div>
+    <div x-show="showDaySortModal" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center px-4"><div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeDaySortModal()"></div><div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-3xl p-5 relative z-10 shadow-xl border border-white/10"><h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">調動日期順序 (長按拖移)</h3><div id="day-sort-list" class="space-y-2 mb-4"><template x-for="(day, index) in itineraryData" :key="index"><div :data-id="index" class="day-sort-item bg-gray-50 dark:bg-gray-800 p-3 rounded-xl flex items-center gap-3 cursor-move border border-gray-200 dark:border-gray-700"><div class="w-8 h-8 rounded-full bg-fuji text-white flex items-center justify-center font-bold" x-text="day.dayNum"></div><div class="flex-1 font-bold text-gray-700 dark:text-gray-200" x-text="day.dateStr + ' ' + day.weekday"></div><i class="fas fa-bars text-gray-400"></i></div></template></div><div class="flex gap-3"><button @click="closeDaySortModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded-xl font-bold text-sm">取消</button><button @click="saveDayOrder()" class="flex-1 py-2 bg-fuji text-white rounded-xl font-bold text-sm">確認調動</button></div></div></div>
     
-    <div x-show="showTransitModal" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center px-4"><div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeTransitModal()"></div><div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-3xl p-5 relative z-10 shadow-xl border border-white/10"><h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">設定路程</h3><div class="flex justify-between gap-2 mb-4"><button @click="transitEdit.type='walk'" :class="transitEdit.type==='walk'?'bg-fuji text-white':'bg-gray-100 dark:bg-gray-700 text-gray-500'" class="flex-1 py-2 rounded-xl text-xs font-bold transition"><i class="fas fa-walking"></i> 走路</button><button @click="transitEdit.type='train'" :class="transitEdit.type==='train'?'bg-fuji text-white':'bg-gray-100 dark:bg-gray-700 text-gray-500'" class="flex-1 py-2 rounded-xl text-xs font-bold transition"><i class="fas fa-subway"></i> 地鐵</button><button @click="transitEdit.type='car'" :class="transitEdit.type==='car'?'bg-fuji text-white':'bg-gray-100 dark:bg-gray-700 text-gray-500'" class="flex-1 py-2 rounded-xl text-xs font-bold transition"><i class="fas fa-car"></i> 開車</button></div><div class="mb-4"><label class="block text-xs text-gray-500 mb-1">預估時間 (例如: 15 min)</label><input type="text" x-model="transitEdit.time" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 outline-none focus:border-fuji"></div><div class="flex gap-3"><button @click="closeTransitModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded-xl font-bold text-sm">取消</button><button @click="saveTransit()" class="flex-1 py-2 bg-fuji text-white rounded-xl font-bold text-sm">確認</button></div></div></div>
+    <div x-show="showTransitModal" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center px-4"><div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeTransitModal()"></div><div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-3xl p-5 relative z-10 shadow-xl border border-white/10"><h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">設定路程</h3><div class="flex justify-between gap-2 mb-4"><button @click="transitEdit.type='walk'" :class="transitEdit.type==='walk'?'bg-fuji text-white':'bg-gray-100 dark:bg-gray-700 text-gray-500'" class="flex-1 py-2 rounded-xl text-xs font-bold transition"><i class="fas fa-walking"></i> 走路</button><button @click="transitEdit.type='train'" :class="transitEdit.type==='train'?'bg-fuji text-white':'bg-gray-100 dark:bg-gray-700 text-gray-500'" class="flex-1 py-2 rounded-xl text-xs font-bold transition"><i class="fas fa-subway"></i> 地鐵</button><button @click="transitEdit.type='car'" :class="transitEdit.type==='car'?'bg-fuji text-white':'bg-gray-100 dark:bg-gray-700 text-gray-500'" class="flex-1 py-2 rounded-xl text-xs font-bold transition"><i class="fas fa-car"></i> 開車</button></div><div class="mb-4"><label class="block text-xs text-gray-500 mb-1">手動輸入時間 (或自動計算)</label><input type="text" x-model="transitEdit.time" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 outline-none focus:border-fuji"></div><div class="flex gap-3"><button @click="closeTransitModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded-xl font-bold text-sm">取消</button><button @click="saveTransit()" class="flex-1 py-2 bg-fuji text-white rounded-xl font-bold text-sm">確認</button></div></div></div>
 
     <div x-show="showSpotModal" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center px-4"><div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeSpotModal()"></div><div class="bg-white dark:bg-darkCard w-full max-w-md rounded-3xl p-6 relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto border border-white/10"><h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><i class="fas fa-map-pin text-fuji dark:text-blue-400"></i> <span x-text="editingSpotId ? '編輯行程' : '新增行程'"></span></h3><div class="space-y-4"><div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">時間</label><input type="time" x-model="modalSpot.time" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 outline-none focus:border-fuji"></div><div class="flex gap-2"><div class="w-1/3"><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">分類</label><select x-model="modalSpot.type" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-2 py-2.5 text-sm outline-none focus:border-fuji"><option value="spot">景點</option><option value="food">餐廳</option><option value="shop">購物</option><option value="hotel">住宿</option><option value="trans">交通</option><option value="play">樂園</option></select></div><div class="flex-1"><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">名稱</label><input type="text" x-model="modalSpot.name" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm outline-none focus:border-fuji" placeholder="地點名稱"></div></div><div class="flex items-end gap-3 bg-blue-50 dark:bg-gray-800 p-3 rounded-xl border border-blue-100 dark:border-gray-700"><div class="flex-1"><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">花費 (JPY)</label><input type="number" x-model.number="modalSpot.cost" class="w-full bg-white dark:bg-gray-700 dark:text-white border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm outline-none"></div><label class="flex items-center gap-2 mb-2 cursor-pointer"><input type="checkbox" x-model="modalSpot.includeInBudget" class="w-4 h-4 rounded text-fuji focus:ring-fuji border-gray-300"><span class="text-xs text-gray-600 dark:text-gray-300 font-bold">加入預算</span></label></div><div class="bg-gray-50 dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700"><div class="flex gap-4 mb-2"><label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer"><input type="radio" value="auto" x-model="modalSpot.locationType" class="text-fuji focus:ring-fuji"> 自動地圖</label><label class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 cursor-pointer"><input type="radio" value="manual" x-model="modalSpot.locationType" class="text-fuji focus:ring-fuji"> 手動網址</label></div><div x-show="modalSpot.locationType === 'manual'"><input type="text" x-model="modalSpot.location" placeholder="輸入 Google Maps 連結" class="w-full bg-white dark:bg-gray-700 dark:text-white border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-1.5 text-xs outline-none"></div></div><div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">備註</label><textarea x-model="modalSpot.desc" rows="3" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm outline-none focus:border-fuji resize-none"></textarea></div><div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">封面圖片</label><label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition relative overflow-hidden"><img x-show="modalSpot.imgDisplay" :src="modalSpot.imgDisplay" class="absolute inset-0 w-full h-full object-cover"><div x-show="!modalSpot.imgDisplay" class="flex flex-col items-center justify-center pt-5 pb-6"><i class="fas fa-camera text-gray-400 text-2xl mb-2"></i><p class="text-xs text-gray-500">點擊拍照或上傳</p></div><input type="file" class="hidden" accept="image/*" @change="handleSpotImageUpload"></label></div></div><div class="flex gap-3 mt-6"><button @click="closeSpotModal()" class="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded-xl font-bold text-sm">取消</button><button @click="saveSpot()" class="flex-1 py-3 bg-fuji text-white rounded-xl font-bold text-sm shadow-md">確認儲存</button></div></div></div>
     <div x-show="showGuideModal" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center px-4"><div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeGuideModal()"></div><div class="bg-white dark:bg-darkCard w-full max-w-md rounded-3xl p-6 relative z-10 shadow-2xl max-h-[90vh] overflow-y-auto border border-white/10"><h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">編輯指南景點</h3><div class="space-y-4"><div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">標題</label><input type="text" x-model="modalGuide.title" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 outline-none focus:border-fuji"></div><div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">描述</label><textarea x-model="modalGuide.desc" rows="4" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm outline-none focus:border-fuji resize-none"></textarea></div><div><label class="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">圖片</label><label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition relative overflow-hidden"><img x-show="modalGuide.img" :src="modalGuide.img" class="absolute inset-0 w-full h-full object-cover"><div x-show="!modalGuide.img" class="flex flex-col items-center justify-center pt-5 pb-6"><i class="fas fa-camera text-gray-400 text-2xl mb-2"></i><p class="text-xs text-gray-500">上傳圖片</p></div><input type="file" class="hidden" accept="image/*" @change="handleGuideImageUpload"></label></div></div><div class="flex gap-3 mt-6"><button @click="closeGuideModal()" class="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded-xl font-bold text-sm">取消</button><button @click="saveGuide()" class="flex-1 py-3 bg-fuji text-white rounded-xl font-bold text-sm">儲存</button></div></div></div>
@@ -364,15 +350,27 @@
                 },
                 shareApp() { if(navigator.share){navigator.share({title:'東京富士旅',url:window.location.href})}else{alert('請手動複製連結');} },
                 
-                // Swap
-                showSwapModal: false, openSwapModal() { this.showSwapModal = true; },
-                swapDayWith(targetIdx) {
-                    const temp = this.itineraryData[this.selectedDayIdx];
-                    this.itineraryData[this.selectedDayIdx] = this.itineraryData[targetIdx];
-                    this.itineraryData[targetIdx] = temp;
-                    this.showSwapModal = false;
-                    alert('行程已調動！');
-                    this.$nextTick(() => { if(this.viewMode==='map') this.initMap(); else this.initSortable(); });
+                // Day Sort (Drag & Drop)
+                showDaySortModal: false, daySortInstance: null,
+                openDaySortModal() { 
+                    this.showDaySortModal = true; 
+                    this.$nextTick(() => {
+                        const el = document.getElementById('day-sort-list');
+                        if (el && !this.daySortInstance) {
+                            this.daySortInstance = new Sortable(el, { animation: 150 });
+                        }
+                    });
+                },
+                closeDaySortModal() { this.showDaySortModal = false; },
+                saveDayOrder() {
+                    const newOrder = this.daySortInstance.toArray(); // Array of indices as strings
+                    const reorderedData = newOrder.map(i => this.itineraryData[parseInt(i)]);
+                    // Re-assign data
+                    this.itineraryData = reorderedData;
+                    // Reset dayNum display (optional, if you want them to stay D1, D2...)
+                    this.itineraryData.forEach((d, i) => d.dayNum = 'D' + (i+1));
+                    this.closeDaySortModal();
+                    this.selectedDayIdx = 0; // Reset to D1
                 },
 
                 // Wallet
@@ -395,6 +393,7 @@
                 get totalSpent() { return this.walletData.transactions.reduce((s,i)=>s+i.amount,0) + this.itinerarySpent; },
                 get itinerarySpent() { let t=0; this.itineraryData.forEach(d=>{d.spots.forEach(s=>{if(s.includeInBudget&&s.cost)t+=parseInt(s.cost)})}); return t; },
                 get remainingCash() { return this.walletData.initialCash - this.totalSpent; },
+                get itineraryExpensesBreakdown() { return this.itineraryData.map(d => d.spots.reduce((acc, s) => acc + (s.includeInBudget ? (parseInt(s.cost)||0) : 0), 0)); },
                 get sortedCategories() { const map={}; this.walletData.transactions.forEach(t=>{map[t.category]=(map[t.category]||0)+t.amount}); this.itineraryData.forEach(d=>{d.spots.forEach(s=>{if(s.includeInBudget&&s.cost){let c='其他';if(s.type==='trans')c='交通';if(s.type==='play'||s.type==='spot')c='樂園';if(s.type==='food')c='餐飲';if(s.type==='shop')c='服飾';map[c]=(map[c]||0)+parseInt(s.cost)}})}); const total=this.totalSpent||1; return Object.keys(map).map(k=>({name:k,value:map[k],percent:(map[k]/total)*100})).sort((a,b)=>b.value-a.value); },
                 get pieChartStyle() { let s='conic-gradient('; let d=0; const c={'交通':'#3b82f6','娛樂':'#facc15','餐飲':'#f97316','樂園':'#ec4899','飯店':'#6366f1','服飾':'#a855f7','玩具':'#ef4444','其他':'#9ca3af'}; this.sortedCategories.forEach((cat,i)=>{const deg=(cat.value/(this.totalSpent||1))*360;s+=`${c[cat.name]||'#ccc'} ${d}deg ${d+deg}deg`;d+=deg;if(i<this.sortedCategories.length-1)s+=', ';}); s+=')'; return s; },
                 getBudgetBorderColor(c){const m={'交通':'border-blue-500','餐飲':'border-orange-500'};return m[c]||'border-gray-400'},
@@ -464,18 +463,54 @@
                     } else { alert("無法取得定位"); }
                 },
 
-                // Modal (同前)
+                // Auto Calc Distance (Haversine)
+                calculateDistanceTime(spot, nextSpot) {
+                    // 如果有手動輸入，優先顯示
+                    if (spot.transitTime && !spot.transitTime.includes('auto')) return spot.transitTime;
+                    
+                    if (!spot.lat || !spot.lng || !nextSpot.lat || !nextSpot.lng) return '設定';
+
+                    const R = 6371; // km
+                    const dLat = (nextSpot.lat - spot.lat) * Math.PI / 180;
+                    const dLon = (nextSpot.lng - spot.lng) * Math.PI / 180;
+                    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                              Math.cos(spot.lat * Math.PI / 180) * Math.cos(nextSpot.lat * Math.PI / 180) *
+                              Math.sin(dLon/2) * Math.sin(dLon/2);
+                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                    const dist = R * c; // Distance in km
+
+                    let speed = 60; // default train
+                    if (spot.transitType === 'walk') speed = 5;
+                    if (spot.transitType === 'car') speed = 40;
+
+                    let mins = Math.round((dist / speed) * 60);
+                    // 加上轉乘/等待緩衝
+                    if (spot.transitType !== 'walk') mins += 15; 
+                    if (mins < 5) mins = 5;
+
+                    const display = mins > 60 ? `${Math.floor(mins/60)}h ${mins%60}m` : `${mins}m`;
+                    // 寫入資料以便保存
+                    spot.transitTime = display; 
+                    return display;
+                },
+
+                // Modal
                 showSpotModal: false, editingSpotId: null, modalSpot: {},
                 showTransitModal: false, transitEdit: { start: null, end: null, time: '', type: 'train' },
                 openSpotModal(s=null){if(s){this.editingSpotId=s.id;this.modalSpot={...s}}else{this.editingSpotId=null;this.modalSpot={time:'',type:'spot',name:'',cost:0,includeInBudget:false,locationType:'auto',desc:'',imgDisplay:'icon.png'}}this.showSpotModal=true},
                 closeSpotModal(){this.showSpotModal=false},
-                saveSpot(){ /* 同前 */ this.closeSpotModal(); },
-                handleSpotImageUpload(e){ /* 同前 */ },
+                saveSpot(){ /* ... */ this.closeSpotModal(); },
+                handleSpotImageUpload(e){ /* ... */ },
                 editTransit(s, next){this.transitEdit={start:s,end:next,time:s.transitTime||'15m',type:s.transitType||'train'};this.showTransitModal=true},
                 closeTransitModal(){this.showTransitModal=false},
-                saveTransit(){this.transitEdit.start.transitTime=this.transitEdit.time;this.transitEdit.start.transitType=this.transitEdit.type;this.closeTransitModal()},
+                saveTransit(){
+                    // 手動輸入後，覆寫自動計算
+                    this.transitEdit.start.transitTime = this.transitEdit.time;
+                    this.transitEdit.start.transitType = this.transitEdit.type;
+                    this.closeTransitModal();
+                },
                 
-                // Guide (同前)
+                // Guide (Same)
                 guideData: [
                     { title: '富士天滑雪度假村', desc: '初學者友善的滑雪場，背景就是壯觀的富士山！記得租用雪盆體驗。', img: 'd4_snow.jpg' },
                     { title: '山中湖 KABA 巴士', desc: '水陸兩用巴士，可以直接衝進山中湖，體驗非常特別。需事先預約。', img: 'd5_kaba.jpg' },
@@ -486,55 +521,60 @@
                 openGuideModal(g=null,i=null){if(g){this.editingGuideIdx=i;this.modalGuide={...g}}else{this.editingGuideIdx=null;this.modalGuide={title:'',desc:'',img:''}}this.showGuideModal=true},
                 closeGuideModal(){this.showGuideModal=false}, saveGuide(){if(this.editingGuideIdx!==null)this.guideData[this.editingGuideIdx]={...this.modalGuide};else this.guideData.push({...this.modalGuide});this.closeGuideModal()},
                 removeGuide(i){if(confirm('刪除？'))this.guideData.splice(i,1)}, handleGuideImageUpload(e){/*...*/}, openLightbox(img){this.lightboxImg=img}, addSpotFromGuide(g){/*...*/}, openGuideForSpot(s){this.currentTab='guide'},
-                memoBlocks: [{title:'必備證件',isOpen:true,newItemText:'',items:[{type:'todo',text:'護照',checked:false}]}],
+                memoBlocks: [
+                    { title: '必備證件', isOpen:true, newItemText:'', items:[{type:'todo',text:'護照',checked:false}, {type:'todo',text:'駕照+日文譯本',checked:false}, {type:'todo',text:'機票憑證',checked:false}] },
+                    { title: '電子 & 網路', isOpen:false, newItemText:'', items:[{type:'todo',text:'行動電源',checked:false}, {type:'todo',text:'Esim / 漫遊開通',checked:false}] },
+                    { title: '生活用品', isOpen:false, newItemText:'', items:[{type:'todo',text:'牙刷牙膏',checked:false}, {type:'todo',text:'常備藥',checked:false}] },
+                    { title: '衣物', isOpen:false, newItemText:'', items:[{type:'todo',text:'換洗衣物 (5天)',checked:false}, {type:'todo',text:'睡衣',checked:false}, {type:'todo',text:'保暖帽/手套',checked:false}] }
+                ],
                 addMemoBlock(){this.memoBlocks.push({title:'新分類',isOpen:true,newItemText:'',items:[]})},
                 addMemoItem(b,t){const txt=this.memoBlocks[b].newItemText.trim(); if(!txt&&t!=='text')return; this.memoBlocks[b].items.push({type:t,text:txt||'內容',checked:false}); this.memoBlocks[b].newItemText=''},
                 removeMemoBlock(i){if(confirm('刪除？'))this.memoBlocks.splice(i,1)}, removeMemoItem(b,i){this.memoBlocks[b].items.splice(i,1)},
-                getTabTitle(){return {wallet:'旅遊錢包',guide:'指南 & 備忘',explore:'探索 & 天氣'}[this.currentTab]||''},
+                getTabTitle(){return {wallet:'旅遊錢包',memo:'備忘 & 清單',guide:'指南 & 探索'}[this.currentTab]||''},
 
                 days: [{ dateStr: '12/21', dayNum: 'D1', weekday: '週日' }, { dateStr: '12/22', dayNum: 'D2', weekday: '週一' }, { dateStr: '12/23', dayNum: 'D3', weekday: '週二' }, { dateStr: '12/24', dayNum: 'D4', weekday: '週三' }, { dateStr: '12/25', dayNum: 'D5', weekday: '週四' }, { dateStr: '12/26', dayNum: 'D6', weekday: '週五' }, { dateStr: '12/27', dayNum: 'D7', weekday: '週六' }, { dateStr: '12/28', dayNum: 'D8', weekday: '週日' }],
                 itineraryData: [
                     { region: '千葉', weatherAdvice: "抵達日。氣溫約 9°C。", spots: [
-                        { id: 101, time: '06:40', type: 'trans', typeLabel: '航班', name: '酷航 TR898', desc: 'TPE -> NRT (T1)', transitTime: '40m', transitType: 'car', cost: 0, lat: 35.7719, lng: 140.3906, img: 'd1_airport.jpg', tags: ['早班機'] },
-                        { id: 102, time: '12:05', type: 'trans', typeLabel: '交通', name: '機場巴士 -> 海濱幕張', desc: '12號站牌搭乘', transitTime: '15m', transitType: 'train', cost: 1300, includeInBudget: true, lat: 35.6483, lng: 140.0422, img: 'icon.png', tags: ['巴士'] },
-                        { id: 103, time: '13:00', type: 'shop', typeLabel: '購物', name: '三井 Outlet Park 幕張', desc: '午餐：Outlet 內解決。', transitTime: '25m', transitType: 'car', tags: ['Beams'], mustBuy: true, lat: 35.6486, lng: 140.0416, img: 'd1_outlet.jpg' },
+                        { id: 101, time: '06:40', type: 'trans', typeLabel: '航班', name: '酷航 TR898', desc: 'TPE -> NRT (T1)', transitType: 'car', cost: 0, lat: 35.7719, lng: 140.3906, img: 'd1_airport.jpg', tags: ['早班機'] },
+                        { id: 102, time: '12:05', type: 'trans', typeLabel: '交通', name: '機場巴士 -> 海濱幕張', desc: '12號站牌搭乘', transitType: 'train', cost: 1300, includeInBudget: true, lat: 35.6483, lng: 140.0422, img: 'icon.png', tags: ['巴士'] },
+                        { id: 103, time: '13:00', type: 'shop', typeLabel: '購物', name: '三井 Outlet Park 幕張', desc: '午餐：Outlet 內解決。', transitType: 'car', tags: ['Beams'], mustBuy: true, lat: 35.6486, lng: 140.0416, img: 'd1_outlet.jpg' },
                         { id: 104, time: '17:00', type: 'hotel', typeLabel: '住宿', name: '星野 1955 Tokyo Bay', desc: 'Lawson 買隔天早餐。', tags: ['Check-in'], mustEat: true, lat: 35.6372, lng: 139.9272, img: 'd1_hoshino.jpg' } 
                     ]},
                     { region: '舞濱', weatherAdvice: "迪士尼全日。氣溫 8°C。", spots: [
-                        { id: 201, time: '06:30', type: 'hotel', typeLabel: '寄放', name: '玩具總動員飯店', desc: '寄放行李。', transitTime: '20m', transitType: 'train', lat: 35.6264, lng: 139.8778, img: 'd2_toys.jpg' },
-                        { id: 202, time: '08:30', type: 'play', typeLabel: '樂園', name: '東京迪士尼樂園 (Land)', desc: '必抽：美女與野獸 DPA。', transitTime: '15m', transitType: 'train', cost: 10900, includeInBudget: true, tags: ['DPA', '遊行'], mustEat: true, lat: 35.6329, lng: 139.8804, img: 'd2_land.jpg' },
+                        { id: 201, time: '06:30', type: 'hotel', typeLabel: '寄放', name: '玩具總動員飯店', desc: '寄放行李。', transitType: 'train', lat: 35.6264, lng: 139.8778, img: 'd2_toys.jpg' },
+                        { id: 202, time: '08:30', type: 'play', typeLabel: '樂園', name: '東京迪士尼樂園 (Land)', desc: '必抽：美女與野獸 DPA。', transitType: 'train', cost: 10900, includeInBudget: true, tags: ['DPA', '遊行'], mustEat: true, lat: 35.6329, lng: 139.8804, img: 'd2_land.jpg' },
                         { id: 203, time: '15:00', type: 'hotel', typeLabel: '住宿', name: '玩具總動員飯店', desc: '入住安迪的房間。', tags: ['安迪房間'], lat: 35.6264, lng: 139.8778, img: 'd2_toys.jpg' }
                     ]},
                     { region: '舞濱', weatherAdvice: "迪士尼海洋。氣溫 8°C。", spots: [
-                        { id: 301, time: '07:00', type: 'play', typeLabel: '樂園', name: '東京迪士尼海洋 (Sea)', desc: '目標：Fantasy Springs。', transitTime: '20m', transitType: 'train', cost: 10900, includeInBudget: true, tags: ['達菲'], mustBuy: true, lat: 35.6267, lng: 139.8851, img: 'd3_sea.jpg' },
-                        { id: 302, time: '19:00', type: 'food', typeLabel: '晚餐', name: 'IKSPIARI 伊克斯皮兒莉', desc: '燒肉/壽司。', transitTime: '15m', transitType: 'car', tags: ['美食街'], lat: 35.6350, lng: 139.8860, img: 'icon.png' },
+                        { id: 301, time: '07:00', type: 'play', typeLabel: '樂園', name: '東京迪士尼海洋 (Sea)', desc: '目標：Fantasy Springs。', transitType: 'train', cost: 10900, includeInBudget: true, tags: ['達菲', '夜間秀'], mustBuy: true, lat: 35.6267, lng: 139.8851, img: 'd3_sea.jpg' },
+                        { id: 302, time: '19:00', type: 'food', typeLabel: '晚餐', name: 'IKSPIARI 伊克斯皮兒莉', desc: '燒肉/壽司。', transitType: 'car', tags: ['美食街'], lat: 35.6350, lng: 139.8860, img: 'icon.png' },
                         { id: 303, time: '21:00', type: 'hotel', typeLabel: '住宿', name: '星野 1955 Tokyo Bay', desc: '回飯店休息。', lat: 35.6372, lng: 139.9272, img: 'd1_hoshino.jpg' }
                     ]},
                     { region: '山梨', weatherAdvice: "移動至富士山。低溫注意。", spots: [
-                        { id: 401, time: '10:00', type: 'trans', typeLabel: '租車', name: 'Toyota Rent a Car (浦安)', desc: '檢查雪胎。', transitTime: '2h', transitType: 'car', cost: 45100, includeInBudget: true, tags: ['ETC'], lat: 35.6660, lng: 139.8930, img: 'd4_car.jpg' },
-                        { id: 402, time: '13:00', type: 'play', typeLabel: '活動', name: '富士天滑雪度假村', desc: '玩雪盆。', transitTime: '40m', transitType: 'car', cost: 6500, includeInBudget: true, parking: '¥1000', tags: ['滑雪'], lat: 35.4339, lng: 138.6738, img: 'd4_snow.jpg' },
-                        { id: 403, time: '18:00', type: 'food', typeLabel: '晚餐', name: '燒肉 鹿兒島 (Yakiniku)', desc: '預約席。', transitTime: '15m', transitType: 'car', cost: 10000, includeInBudget: true, parking: '附設', lat: 35.5000, lng: 138.7000, img: 'd4_yakiniku.jpg' },
+                        { id: 401, time: '10:00', type: 'trans', typeLabel: '租車', name: 'Toyota Rent a Car (浦安)', desc: '檢查雪胎。', transitType: 'car', cost: 45100, includeInBudget: true, tags: ['ETC'], lat: 35.6660, lng: 139.8930, img: 'd4_car.jpg' },
+                        { id: 402, time: '13:00', type: 'play', typeLabel: '活動', name: '富士天滑雪度假村', desc: '玩雪盆。', transitType: 'car', cost: 6500, includeInBudget: true, parking: '¥1000', tags: ['滑雪'], lat: 35.4339, lng: 138.6738, img: 'd4_snow.jpg' },
+                        { id: 403, time: '18:00', type: 'food', typeLabel: '晚餐', name: '燒肉 鹿兒島 (Yakiniku)', desc: '預約席。', transitType: 'car', cost: 10000, includeInBudget: true, parking: '附設', lat: 35.5000, lng: 138.7000, img: 'd4_yakiniku.jpg' },
                         { id: 404, time: '20:00', type: 'hotel', typeLabel: '住宿', name: 'Rental Villa Ooishiso', desc: '大石莊。', parking: '免費', lat: 35.5348, lng: 138.7406, img: 'icon.png' }
                     ]},
                     { region: '山梨', weatherAdvice: "聖誕節 @ 富士五湖。", spots: [
-                        { id: 501, time: '08:00', type: 'spot', typeLabel: '景點', name: '大石公園', desc: '晨間散步。', transitTime: '20m', transitType: 'car', parking: '免費', tags: ['散步'], lat: 35.5227, lng: 138.7447, img: 'd5_oishi.jpg' },
-                        { id: 502, time: '11:00', type: 'play', typeLabel: '活動', name: '山中湖 KABA 巴士', desc: '水陸兩用巴士。', transitTime: '30m', transitType: 'car', cost: 2800, includeInBudget: true, parking: '免費', lat: 35.4196, lng: 138.8732, img: 'd5_kaba.jpg' },
-                        { id: 503, time: '12:30', type: 'food', typeLabel: '午餐', name: 'Houtou Fudou (不動茶屋)', desc: '餺飥麵。', transitTime: '40m', transitType: 'car', cost: 1200, includeInBudget: true, tags: ['鄉土料理'], mustEat: true, lat: 35.5033, lng: 138.7562, img: 'icon.png' },
+                        { id: 501, time: '08:00', type: 'spot', typeLabel: '景點', name: '大石公園', desc: '晨間散步。', transitType: 'car', parking: '免費', tags: ['散步'], lat: 35.5227, lng: 138.7447, img: 'd5_oishi.jpg' },
+                        { id: 502, time: '11:00', type: 'play', typeLabel: '活動', name: '山中湖 KABA 巴士', desc: '水陸兩用巴士。', transitType: 'car', cost: 2800, includeInBudget: true, parking: '免費', lat: 35.4196, lng: 138.8732, img: 'd5_kaba.jpg' },
+                        { id: 503, time: '12:30', type: 'food', typeLabel: '午餐', name: 'Houtou Fudou (不動茶屋)', desc: '餺飥麵。', transitType: 'car', cost: 1200, includeInBudget: true, tags: ['鄉土料理'], mustEat: true, lat: 35.5033, lng: 138.7562, img: 'icon.png' },
                         { id: 504, time: '14:30', type: 'spot', typeLabel: '景點', name: '富士山全景纜車', desc: '天上山公園。', cost: 1000, includeInBudget: true, parking: '縣營', lat: 35.5042, lng: 138.7717, img: 'd5_ropeway.jpg' }
                     ]},
                     { region: '東京', weatherAdvice: "移動回東京。注意塞車。", spots: [
-                        { id: 601, time: '09:30', type: 'play', typeLabel: '活動', name: '富士野生動物園', desc: '叢林巴士。', transitTime: '2h 30m', transitType: 'car', cost: 4200, includeInBudget: true, parking: '免費', lat: 35.2588, lng: 138.7997, img: 'd6_safari.jpg' },
-                        { id: 602, time: '16:00', type: 'trans', typeLabel: '還車', name: 'Toyota 吾妻橋店', desc: '加滿油再還車。', transitTime: '15m', transitType: 'walk', gas: 'Full', lat: 35.7095, lng: 139.8033, img: 'icon.png' },
+                        { id: 601, time: '09:30', type: 'play', typeLabel: '活動', name: '富士野生動物園', desc: '叢林巴士。', transitType: 'car', cost: 4200, includeInBudget: true, parking: '免費', lat: 35.2588, lng: 138.7997, img: 'd6_safari.jpg' },
+                        { id: 602, time: '16:00', type: 'trans', typeLabel: '還車', name: 'Toyota 吾妻橋店', desc: '加滿油再還車。', transitType: 'walk', gas: 'Full', lat: 35.7095, lng: 139.8033, img: 'icon.png' },
                         { id: 603, time: '17:00', type: 'hotel', typeLabel: '住宿', name: 'Asakusa New City Hotel', desc: '淺草周邊。', lat: 35.7170, lng: 139.7992, img: 'icon.png' }
                     ]},
                     { region: '東京', weatherAdvice: "市區逛街。", spots: [
-                        { id: 701, time: '11:00', type: 'shop', typeLabel: '購物', name: 'BEAMS JAPAN 新宿', desc: 'B1-5F。', transitTime: '25m', transitType: 'train', tags: ['潮牌'], mustBuy: true, lat: 35.6903, lng: 139.7027, img: 'd7_beams.jpg' },
-                        { id: 702, time: '14:00', type: 'spot', typeLabel: '景點', name: '池袋太陽城水族館', desc: '天空企鵝。', transitTime: '30m', transitType: 'train', cost: 2600, includeInBudget: true, lat: 35.7289, lng: 139.7198, img: 'd7_aquarium.jpg' },
+                        { id: 701, time: '11:00', type: 'shop', typeLabel: '購物', name: 'BEAMS JAPAN 新宿', desc: 'B1-5F。', transitType: 'train', tags: ['潮牌'], mustBuy: true, lat: 35.6903, lng: 139.7027, img: 'd7_beams.jpg' },
+                        { id: 702, time: '14:00', type: 'spot', typeLabel: '景點', name: '池袋太陽城水族館', desc: '天空企鵝。', transitType: 'train', cost: 2600, includeInBudget: true, lat: 35.7289, lng: 139.7198, img: 'd7_aquarium.jpg' },
                         { id: 703, time: '18:00', type: 'spot', typeLabel: '活動', name: '東京車站 燈光秀', desc: '丸之內口。', tags: ['夜景'], lat: 35.6812, lng: 139.7671, img: 'd7_station.jpg' }
                     ]},
                     { region: '東京', weatherAdvice: "回程日。", spots: [
-                        { id: 801, time: '09:00', type: 'play', typeLabel: '體驗', name: '淺草花屋敷 / 和服體驗', desc: '日本最古老遊樂園。', transitTime: '45m', transitType: 'train', cost: 5000, includeInBudget: true, tags: ['懷舊'], lat: 35.7153, lng: 139.7945, img: 'd8_asakusa.jpg' },
-                        { id: 802, time: '10:00', type: 'trans', typeLabel: '交通', name: '前往成田機場', desc: 'Skyliner 直達。', transitTime: '3h', transitType: 'train', cost: 2500, includeInBudget: true, tags: ['Skyliner'], lat: 35.7170, lng: 139.7992, img: 'icon.png' },
+                        { id: 801, time: '09:00', type: 'play', typeLabel: '體驗', name: '淺草花屋敷 / 和服體驗', desc: '日本最古老遊樂園。', transitType: 'train', cost: 5000, includeInBudget: true, tags: ['懷舊'], lat: 35.7153, lng: 139.7945, img: 'd8_asakusa.jpg' },
+                        { id: 802, time: '10:00', type: 'trans', typeLabel: '交通', name: '前往成田機場', desc: 'Skyliner 直達。', transitType: 'train', cost: 2500, includeInBudget: true, tags: ['Skyliner'], lat: 35.7170, lng: 139.7992, img: 'icon.png' },
                         { id: 803, time: '11:45', type: 'trans', typeLabel: '航班', name: '酷航 TR899 (NRT -> TPE)', desc: '14:55 TPE 抵達', tags: ['回家'], lat: 35.7719, lng: 140.3906, img: 'https://cdn-icons-png.flaticon.com/512/723/723955.png' }
                     ]}
                 ],
