@@ -6,6 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>東京富士冬日旅 2025</title>
+    
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="icon" type="image/png" href="icon.png">
     
@@ -52,7 +53,6 @@
         #map-container { height: calc(100vh - 280px); width: 100%; border-radius: 16px; z-index: 1; }
         .custom-marker { background-color: #2C5F8A; color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
         
-        /* 路線連接線 (垂直堆疊) */
         .route-connector { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 0; position: relative; }
         .line-segment { width: 2px; height: 20px; background-color: #cbd5e1; }
         .dark .line-segment { background-color: #4b5563; }
@@ -102,13 +102,13 @@
         <div x-show="currentTab === 'itinerary'" class="flex flex-col px-2 pb-2">
             <div class="flex items-center w-full">
                 <div class="flex overflow-x-auto hide-scrollbar py-3 px-1 gap-3 flex-1">
-                    <template x-for="(day, idx) in itineraryData" :key="day.dayNum">
-                        <div @click="changeDay(idx)" 
-                             :class="{'bg-fuji text-white shadow-md scale-105': selectedDayIdx === idx, 'bg-gray-50 text-gray-400 border border-gray-100 dark:bg-gray-800 dark:border-gray-700': selectedDayIdx !== idx}"
+                    <template x-for="(day, index) in itineraryData" :key="index">
+                        <div @click="changeDay(index)" 
+                             :class="{'bg-fuji text-white shadow-md scale-105': selectedDayIdx === index, 'bg-gray-50 text-gray-400 border border-gray-100 dark:bg-gray-800 dark:border-gray-700': selectedDayIdx !== index}"
                              class="flex-shrink-0 w-14 h-16 rounded-xl flex flex-col items-center justify-center transition-all duration-200 cursor-pointer">
                             <span class="text-[9px] font-bold tracking-wider opacity-80" x-text="day.dateStr"></span>
                             <span class="text-lg font-bold" x-text="day.dayNum"></span>
-                            <span class="text-[9px]" x-show="selectedDayIdx === idx" x-text="day.weekday"></span>
+                            <span class="text-[9px]" x-show="selectedDayIdx === index" x-text="day.weekday"></span>
                         </div>
                     </template>
                 </div>
@@ -117,6 +117,7 @@
                     <span class="text-[9px] font-bold mt-0.5">管理</span>
                 </button>
             </div>
+
             <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-1 flex mx-1 mt-1">
                 <button @click="toggleViewMode('list')" :class="viewMode==='list' ? 'bg-white dark:bg-gray-600 text-fuji dark:text-white shadow-sm' : 'text-gray-400'" class="flex-1 py-1.5 rounded-md text-xs font-bold transition flex items-center justify-center gap-1"><i class="fas fa-list-ul"></i> 列表</button>
                 <button @click="toggleViewMode('map')" :class="viewMode==='map' ? 'bg-white dark:bg-gray-600 text-fuji dark:text-white shadow-sm' : 'text-gray-400'" class="flex-1 py-1.5 rounded-md text-xs font-bold transition flex items-center justify-center gap-1"><i class="fas fa-map-marked-alt"></i> 地圖</button>
@@ -145,6 +146,7 @@
             <div x-show="viewMode === 'list'" id="itinerary-list" class="space-y-0 pb-24">
                 <template x-for="(spot, index) in currentDayData.spots" :key="spot.id">
                     <div class="flex flex-col w-full">
+                        
                         <div :data-id="spot.id" class="w-full bg-white dark:bg-darkCard rounded-2xl p-4 card-shadow relative z-10 border border-transparent dark:border-gray-700 transition-colors group">
                             <div class="flex justify-between items-center mb-2 border-b border-gray-100 dark:border-gray-700 pb-2">
                                 <div class="flex items-center gap-2">
@@ -171,6 +173,7 @@
                             </div>
                             <button @click="removeSpot(index)" class="absolute -right-2 -top-2 w-6 h-6 bg-red-100 text-red-500 rounded-full text-xs opacity-0 group-hover:opacity-100 transition shadow-sm flex items-center justify-center"><i class="fas fa-times"></i></button>
                         </div>
+
                         <div x-show="index < currentDayData.spots.length - 1" class="route-connector">
                             <div class="line-segment"></div>
                             <div class="flex items-center gap-2">
@@ -184,6 +187,7 @@
                             </div>
                             <div class="line-segment"></div>
                         </div>
+
                     </div>
                 </template>
                 <button @click="openSpotModal()" class="w-full mt-8 mb-12 py-3 bg-white dark:bg-darkCard border-2 border-dashed border-fuji dark:border-blue-700 text-fuji dark:text-blue-300 rounded-xl font-bold shadow-sm hover:bg-blue-50 dark:hover:bg-gray-800 flex items-center justify-center gap-2"><i class="fas fa-plus-circle"></i> 新增行程景點</button>
@@ -233,18 +237,22 @@
                     <button @click="handleCalc('back')" class="h-14 rounded-xl font-bold text-lg bg-calcBtn dark:bg-calcBtnDark"><i class="fas fa-backspace"></i></button>
                     <button @click="handleCalc('%')" class="h-14 rounded-xl font-bold text-lg bg-calcBtn dark:bg-calcBtnDark">%</button>
                     <button @click="handleCalc('/')" class="h-14 rounded-xl font-bold text-lg bg-calcOp dark:bg-calcOpDark text-orange-500">÷</button>
+                    
                     <button @click="handleCalc('7')" class="h-14 rounded-xl font-bold text-lg bg-white dark:bg-calcBtnDark text-gray-700 dark:text-gray-200">7</button>
                     <button @click="handleCalc('8')" class="h-14 rounded-xl font-bold text-lg bg-white dark:bg-calcBtnDark text-gray-700 dark:text-gray-200">8</button>
                     <button @click="handleCalc('9')" class="h-14 rounded-xl font-bold text-lg bg-white dark:bg-calcBtnDark text-gray-700 dark:text-gray-200">9</button>
                     <button @click="handleCalc('*')" class="h-14 rounded-xl font-bold text-lg bg-calcOp dark:bg-calcOpDark text-orange-500">×</button>
+                    
                     <button @click="handleCalc('4')" class="h-14 rounded-xl font-bold text-lg bg-white dark:bg-calcBtnDark text-gray-700 dark:text-gray-200">4</button>
                     <button @click="handleCalc('5')" class="h-14 rounded-xl font-bold text-lg bg-white dark:bg-calcBtnDark text-gray-700 dark:text-gray-200">5</button>
                     <button @click="handleCalc('6')" class="h-14 rounded-xl font-bold text-lg bg-white dark:bg-calcBtnDark text-gray-700 dark:text-gray-200">6</button>
                     <button @click="handleCalc('-')" class="h-14 rounded-xl font-bold text-lg bg-calcOp dark:bg-calcOpDark text-orange-500">-</button>
+                    
                     <button @click="handleCalc('1')" class="h-14 rounded-xl font-bold text-lg bg-white dark:bg-calcBtnDark text-gray-700 dark:text-gray-200">1</button>
                     <button @click="handleCalc('2')" class="h-14 rounded-xl font-bold text-lg bg-white dark:bg-calcBtnDark text-gray-700 dark:text-gray-200">2</button>
                     <button @click="handleCalc('3')" class="h-14 rounded-xl font-bold text-lg bg-white dark:bg-calcBtnDark text-gray-700 dark:text-gray-200">3</button>
                     <button @click="handleCalc('+')" class="h-14 rounded-xl font-bold text-lg bg-calcOp dark:bg-calcOpDark text-orange-500">+</button>
+                    
                     <button @click="handleCalc('0')" class="h-14 rounded-xl font-bold text-lg bg-white dark:bg-calcBtnDark text-gray-700 dark:text-gray-200">0</button>
                     <button @click="handleCalc('.')" class="h-14 rounded-xl font-bold text-lg bg-white dark:bg-calcBtnDark text-gray-700 dark:text-gray-200">.</button>
                     <button @click="handleCalc('=')" class="h-14 rounded-xl font-bold text-lg bg-fuji text-white">=</button>
@@ -378,7 +386,7 @@
 
     <nav class="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-darkCard/95 backdrop-blur-xl border-t border-gray-200 dark:border-gray-700 transition-colors z-40 safe-bottom"><div class="grid grid-cols-4 items-center h-16 max-w-md mx-auto"><button @click="currentTab='itinerary'" :class="{'text-fuji dark:text-blue-300': currentTab === 'itinerary', 'text-gray-400 dark:text-gray-500': currentTab !== 'itinerary'}" class="flex flex-col items-center justify-center h-full active:scale-95"><i class="fas fa-map-marked-alt text-xl mb-1"></i><span class="text-[9px] font-bold">行程</span></button><button @click="currentTab='wallet'" :class="{'text-fuji dark:text-blue-300': currentTab === 'wallet', 'text-gray-400 dark:text-gray-500': currentTab !== 'wallet'}" class="flex flex-col items-center justify-center h-full active:scale-95"><i class="fas fa-wallet text-xl mb-1"></i><span class="text-[9px] font-bold">錢包</span></button><button @click="currentTab='memo'" :class="{'text-fuji dark:text-blue-300': currentTab === 'memo', 'text-gray-400 dark:text-gray-500': currentTab !== 'memo'}" class="flex flex-col items-center justify-center h-full active:scale-95"><i class="fas fa-clipboard-list text-xl mb-1"></i><span class="text-[9px] font-bold">備忘</span></button><button @click="currentTab='guide'" :class="{'text-fuji dark:text-blue-300': currentTab === 'guide', 'text-gray-400 dark:text-gray-500': currentTab !== 'guide'}" class="flex flex-col items-center justify-center h-full active:scale-95"><i class="fas fa-compass text-xl mb-1"></i><span class="text-[9px] font-bold">指南</span></button></div></nav>
 
-    <div x-show="showDaySortModal" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center px-4"><div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showDaySortModal=false"></div><div class="bg-white dark:bg-darkCard w-full max-w-xs rounded-3xl p-5 relative z-10 shadow-xl border border-white/10 text-center"><h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">調動行程</h3><p class="text-sm text-gray-500 mb-4">將 <span class="font-bold text-fuji" x-text="itineraryData[selectedDayIdx].dateStr"></span> 的所有行程與...</p><div class="grid grid-cols-4 gap-2 mb-4"><template x-for="(day, idx) in itineraryData" :key="idx"><button @click="swapDayWith(idx)" x-show="idx !== selectedDayIdx" class="py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-xs font-bold hover:bg-fuji hover:text-white transition" x-text="day.dateStr"></button></template></div><button @click="showDaySortModal=false" class="text-sm text-gray-400 underline">取消</button></div></div>
+    <div x-show="showDaySortModal" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center px-4"><div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="showDaySortModal=false"></div><div class="bg-white dark:bg-darkCard w-full max-w-xs rounded-3xl p-5 relative z-10 shadow-xl border border-white/10 text-center"><h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">調動行程</h3><p class="text-sm text-gray-500 mb-4">將 <span class="font-bold text-fuji" x-text="itineraryData[selectedDayIdx].dateStr"></span> 的所有行程與...</p><div class="grid grid-cols-4 gap-2 mb-4"><template x-for="(day, index) in itineraryData" :key="index"><button @click="swapDayWith(index)" x-show="index !== selectedDayIdx" class="py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-xs font-bold hover:bg-fuji hover:text-white transition" x-text="day.dateStr"></button></template></div><button @click="showDaySortModal=false" class="text-sm text-gray-400 underline">取消</button></div></div>
     
     <div x-show="showTransitModal" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center px-4"><div class="absolute inset-0 bg-black/60 backdrop-blur-sm" @click="closeTransitModal()"></div><div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-3xl p-5 relative z-10 shadow-xl border border-white/10"><h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">設定路程</h3><div class="flex justify-between gap-2 mb-4"><button @click="transitEdit.type='walk'" :class="transitEdit.type==='walk'?'bg-fuji text-white':'bg-gray-100 dark:bg-gray-700 text-gray-500'" class="flex-1 py-2 rounded-xl text-xs font-bold transition"><i class="fas fa-walking"></i> 走路</button><button @click="transitEdit.type='train'" :class="transitEdit.type==='train'?'bg-fuji text-white':'bg-gray-100 dark:bg-gray-700 text-gray-500'" class="flex-1 py-2 rounded-xl text-xs font-bold transition"><i class="fas fa-subway"></i> 地鐵</button><button @click="transitEdit.type='car'" :class="transitEdit.type==='car'?'bg-fuji text-white':'bg-gray-100 dark:bg-gray-700 text-gray-500'" class="flex-1 py-2 rounded-xl text-xs font-bold transition"><i class="fas fa-car"></i> 開車</button></div><div class="mb-4"><label class="block text-xs text-gray-500 mb-1">預估時間 (例如: 15 min)</label><input type="text" x-model="transitEdit.time" class="w-full bg-gray-50 dark:bg-gray-800 dark:text-white border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 outline-none focus:border-fuji"></div><div class="flex gap-3"><button @click="closeTransitModal()" class="flex-1 py-2 bg-gray-100 dark:bg-gray-700 text-gray-500 rounded-xl font-bold text-sm">取消</button><button @click="saveTransit()" class="flex-1 py-2 bg-fuji text-white rounded-xl font-bold text-sm">確認</button></div></div></div>
 
@@ -410,23 +418,8 @@
                 showSwapModal: false, openSwapModal() { this.showSwapModal = true; },
                 swapDayWith(targetIdx) {
                     const temp = this.itineraryData[this.selectedDayIdx];
-                    // Swap content but KEEP dayNum/dateStr (optional, depends on logic. Here we swap entire object)
-                    // If we want dates to stay, we should swap content only. But simplest is full swap.
-                    const target = this.itineraryData[targetIdx];
-                    
-                    // Swap content properties
-                    const tempSpots = temp.spots;
-                    const tempRegion = temp.region;
-                    const tempWeather = temp.weatherAdvice;
-                    
-                    temp.spots = target.spots;
-                    temp.region = target.region;
-                    temp.weatherAdvice = target.weatherAdvice;
-                    
-                    target.spots = tempSpots;
-                    target.region = tempRegion;
-                    target.weatherAdvice = tempWeather;
-
+                    this.itineraryData[this.selectedDayIdx] = this.itineraryData[targetIdx];
+                    this.itineraryData[targetIdx] = temp;
                     this.showSwapModal = false;
                     alert('行程已調動！');
                     this.$nextTick(() => { if(this.viewMode==='map') this.initMap(); else this.initSortable(); });
@@ -487,25 +480,25 @@
                     },()=>{this.realTimeWeather.error="請允許定位";this.realTimeWeather.loading=false;});
                 },
                 openLocationWeather(r){
-                    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('天氣 ' + r)}`;
+                    const url = `http://googleusercontent.com/maps.google.com/search?q=${encodeURIComponent('天氣 ' + r)}`;
                     window.open(url, '_blank');
                 },
                 searchNearby(keyword) { 
-                    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(keyword)}`;
+                    const url = `http://googleusercontent.com/maps.google.com/search?q=${encodeURIComponent(keyword)}`;
                     window.open(url, '_blank');
                 },
                 openMapSearch(place) { 
-                    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}`;
+                    const url = `http://googleusercontent.com/maps.google.com/search?q=${encodeURIComponent(place)}`;
                     window.open(url, '_blank');
                 },
                 guideSearchQuery: '',
                 rainyPlans: [{name:'池袋太陽城',desc:'水族館與展望台'},{name:'TeamLab',desc:'豐洲光影藝術'},{name:'Aeon Mall',desc:'幕張新都心'}],
 
                 // Map & Nav
-                getMapLink(spot) { return spot.locationType==='manual'?spot.location:`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.name)}`; },
+                getMapLink(spot) { return spot.locationType==='manual'?spot.location:`http://googleusercontent.com/maps.google.com/search?q=${encodeURIComponent(spot.name)}`; },
                 navigateBetween(start, end) { 
                     let mode='transit'; if(start.transitType==='car')mode='driving'; if(start.transitType==='walk')mode='walking';
-                    const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(start.name)}&destination=${encodeURIComponent(end.name)}&travelmode=${mode}`;
+                    const url = `http://googleusercontent.com/maps.google.com/dir/?api=1&origin=${encodeURIComponent(start.name)}&destination=${encodeURIComponent(end.name)}&travelmode=${mode}`;
                     window.open(url, '_blank');
                 },
                 initMap() {
@@ -587,6 +580,9 @@
                     this.transitEdit.start.transitType = this.transitEdit.type;
                     this.closeTransitModal();
                 },
+                getTransitIcon(type) { const icons = { 'walk': 'fa-walking', 'train': 'fa-subway', 'car': 'fa-car' }; return icons[type] || 'fa-arrow-down'; },
+                getTypeLabel(type) { const labels = { 'spot': '景點', 'food': '餐廳', 'shop': '購物', 'hotel': '住宿', 'trans': '交通', 'play': '樂園' }; return labels[type] || '地點'; },
+                editSpot(spot) { this.openSpotModal(spot); },
                 
                 // Guide
                 guideData: [
